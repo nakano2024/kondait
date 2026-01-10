@@ -1,0 +1,3 @@
+.gocache/
+backend/src/tmp/
+*.log
