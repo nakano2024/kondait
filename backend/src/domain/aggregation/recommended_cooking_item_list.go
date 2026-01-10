@@ -13,7 +13,7 @@ type RecommendedCookingItemList struct {
 }
 
 func NewRecommendedCookingItemList(items []*entity.RecommendedCookingItem) (*RecommendedCookingItemList, error) {
-	if len(items) > maxCount {
+	if maxCount < len(items) {
 		return nil, errors.New("recommended cooking items must be 5 or fewer")
 	}
 
