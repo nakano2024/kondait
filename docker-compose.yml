@@ -1,0 +1,36 @@
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: kondait
+      DB_SSLMODE: disable
+      DB_MIGRATIONS_PATH: /app/migrations
+      PORT: "8080"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/src:/app
+      - ./backend/migrations:/app/migrations
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kondait
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

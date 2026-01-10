@@ -1,0 +1,11 @@
+FROM golang:1.23-alpine
+
+ENV GOTOOLCHAIN=local
+
+RUN apk add --no-cache git
+
+WORKDIR /app
+
+RUN go install github.com/cosmtrek/air@v1.52.0
+
+CMD ["air"]

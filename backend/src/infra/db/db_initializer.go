@@ -11,7 +11,7 @@ import (
 
 type DbInitializer struct{}
 
-func (DbInitializer) Open(cfg config.Config) (*gorm.DB, error) {
+func (dbInitializr *DbInitializer) Open(cfg config.Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.DBHost,
@@ -22,4 +22,8 @@ func (DbInitializer) Open(cfg config.Config) (*gorm.DB, error) {
 		cfg.DBSSLMode,
 	)
 	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
+}
+
+func NewDbInitializer() *DbInitializer {
+	return &DbInitializer{}
 }

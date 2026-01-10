@@ -17,7 +17,13 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	_, err = db.DbInitializer{}.Open(cfg)
+	dbMigrator := db.NewDbMigrator()
+	if err := dbMigrator.Migrate(cfg); err != nil {
+		log.Fatalln(err)
+	}
+
+	dbInitializer := db.NewDbInitializer()
+	_, err = dbInitializer.Open(cfg)
 	if err != nil {
 		log.Fatalln(err)
 	}
