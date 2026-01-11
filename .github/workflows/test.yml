@@ -1,0 +1,34 @@
+name: test
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/src/go.mod
+
+      - name: Start PostgreSQL
+        run: |
+          sudo systemctl start postgresql
+          sudo -u postgres psql -c "CREATE USER kondait WITH PASSWORD 'kondait';"
+          sudo -u postgres psql -c "CREATE DATABASE kondait_test OWNER kondait;"
+
+      - name: Run tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_USER: kondait
+          DB_PASSWORD: kondait
+          DB_NAME: kondait_test
+          DB_SSLMODE: disable
+          DB_MIGRATIONS_PATH: ${{ github.workspace }}/backend/migrations
+          TESTDATA_PATH: ${{ github.workspace }}/backend/src/infra/testdata
+        run: |
+          cd backend/src
+          go test ./...
