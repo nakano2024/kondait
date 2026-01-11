@@ -1,4 +1,5 @@
 .gocache/
+src/tmp/
 backend/src/tmp/
 *.log
 go.work

@@ -2,11 +2,13 @@ package handler
 
 import (
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/labstack/echo/v4"
 
 	"kondait-backend/application/usecase"
+	"kondait-backend/dto/auth"
 )
 
 type getRecommendedCookingItemsHandler struct {
@@ -31,12 +33,17 @@ type response struct {
 }
 
 func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
-	authUserId, ok := c.Get("auth_user_id").(string)
+	principal, ok := c.Get("principal").(auth.Principal)
 	if !ok {
 		return echo.NewHTTPError(http.StatusUnauthorized)
 	}
+
+	if !slices.Contains(principal.Scopes, auth.ScopeCookingItemsRead) {
+		return echo.NewHTTPError(http.StatusForbidden)
+	}
+
 	output, err := handler.getRecCookingItmUsecase.Exec(usecase.ReccomendedCookingListFetchCondition{
-		UserCode: authUserId,
+		UserCode: principal.UserCode,
 	})
 
 	if err != nil {
