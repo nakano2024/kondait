@@ -33,10 +33,10 @@ func (repo *recommendedCookingItemRepository) FetchByUserCode(uCode string) (*ag
 	err := repo.db.
 		Table("cooking_items").
 		Select("code, name, cook_count, last_cooked_date").
-		Where("cooking_items.user_code = ?", uCode).
+		Where("cooking_items.owner_code = ?", uCode).
 		Order("cook_count ASC").
 		Order("last_cooked_date ASC NULLS FIRST").
-		Order("last_cooked_date ASC NULLS FIRST").
+		Limit(5).
 		Find(&rows).Error
 	if err != nil {
 		return nil, err
