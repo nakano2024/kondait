@@ -18,9 +18,9 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
 COPY --from=builder /bin/server /app/server
-COPY backend/migrations /app/migrations
+COPY backend/src/infra/migrations /app/infra/migrations
 
-ENV DB_MIGRATIONS_PATH=/app/migrations
+ENV DB_MIGRATIONS_PATH=/app/infra/migrations
 
 EXPOSE 8080
 

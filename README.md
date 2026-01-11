@@ -15,7 +15,7 @@ export DB_USER=postgres
 export DB_PASSWORD=postgres
 export DB_NAME=kondait_test
 export DB_SSLMODE=disable
-export DB_MIGRATIONS_PATH=./backend/migrations
+export DB_MIGRATIONS_PATH=./backend/src/infra/migrations
 export TESTDATA_PATH=./backend/src/infra/testdata
 
 cd backend/src

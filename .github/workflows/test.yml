@@ -27,7 +27,7 @@ jobs:
           DB_PASSWORD: kondait
           DB_NAME: kondait_test
           DB_SSLMODE: disable
-          DB_MIGRATIONS_PATH: ${{ github.workspace }}/backend/migrations
+          DB_MIGRATIONS_PATH: ${{ github.workspace }}/backend/src/infra/migrations
           TESTDATA_PATH: ${{ github.workspace }}/backend/src/infra/testdata
         run: |
           cd backend/src
