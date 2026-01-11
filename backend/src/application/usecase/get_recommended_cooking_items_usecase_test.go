@@ -41,9 +41,9 @@ func TestGetRecommendedCookingItemsUsecase_Exec_Success(t *testing.T) {
 			name:  "empty items",
 			items: []*entity.RecommendedCookingItem{},
 			fetchCond: ReccomendedCookingListFetchCondition{
-				userCode: "user-1",
+				UserCode: "user-1",
 			},
-			expected:     ReccomendedCookingListItemOutput{list: []ReccomendedCookingOutputItem{}},
+			expected:     ReccomendedCookingListItemOutput{List: []ReccomendedCookingOutputItem{}},
 			expectedCode: "user-1",
 		},
 		{
@@ -56,9 +56,9 @@ func TestGetRecommendedCookingItemsUsecase_Exec_Success(t *testing.T) {
 				{Code: "E5", Name: "Salad", CookCount: 5, LastCookedDate: time.Date(2024, 1, 6, 3, 4, 5, 0, time.UTC)},
 			},
 			fetchCond: ReccomendedCookingListFetchCondition{
-				userCode: "user-2",
+				UserCode: "user-2",
 			},
-			expected: ReccomendedCookingListItemOutput{list: []ReccomendedCookingOutputItem{
+			expected: ReccomendedCookingListItemOutput{List: []ReccomendedCookingOutputItem{
 				{Code: "A1", Name: "Rice", CookCount: 1, LastCookedDate: time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)},
 				{Code: "B2", Name: "Curry", CookCount: 2, LastCookedDate: time.Date(2024, 1, 3, 3, 4, 5, 0, time.UTC)},
 				{Code: "C3", Name: "Soup", CookCount: 3, LastCookedDate: time.Date(2024, 1, 4, 3, 4, 5, 0, time.UTC)},
@@ -99,7 +99,7 @@ func TestGetRecommendedCookingItemsUsecase_Exec_Failure(t *testing.T) {
 				expectedCode: "user-1",
 			},
 			fetchCond: ReccomendedCookingListFetchCondition{
-				userCode: "user-1",
+				UserCode: "user-1",
 			},
 		},
 		{
@@ -117,7 +117,7 @@ func TestGetRecommendedCookingItemsUsecase_Exec_Failure(t *testing.T) {
 				expectedCode: "user-2",
 			},
 			fetchCond: ReccomendedCookingListFetchCondition{
-				userCode: "user-2",
+				UserCode: "user-2",
 			},
 		},
 	}
@@ -129,7 +129,7 @@ func TestGetRecommendedCookingItemsUsecase_Exec_Failure(t *testing.T) {
 			got, err := usecase.Exec(tt.fetchCond)
 			require.Error(t, err)
 			assert.Equal(t, ReccomendedCookingListItemOutput{}, got)
-			assert.Nil(t, got.list)
+			assert.Nil(t, got.List)
 		})
 	}
 }

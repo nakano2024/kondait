@@ -15,11 +15,11 @@ type ReccomendedCookingOutputItem struct {
 }
 
 type ReccomendedCookingListItemOutput struct {
-	list []ReccomendedCookingOutputItem
+	List []ReccomendedCookingOutputItem
 }
 
 type ReccomendedCookingListFetchCondition struct {
-	userCode string
+	UserCode string
 }
 
 type GetRecommendedCookingItemsUsecase interface {
@@ -39,7 +39,7 @@ func NewGetRecommendedCookingItemsUsecase(
 }
 
 func (usecase *getRecommendedCookingItemsUsecase) Exec(fCond ReccomendedCookingListFetchCondition) (ReccomendedCookingListItemOutput, error) {
-	list, err := usecase.repo.FetchByUserCode(fCond.userCode)
+	list, err := usecase.repo.FetchByUserCode(fCond.UserCode)
 	if err != nil {
 		return ReccomendedCookingListItemOutput{}, err
 	}
@@ -59,6 +59,6 @@ func convertRecommendedCookingListItems(items []*entity.RecommendedCookingItem) 
 	}
 
 	return ReccomendedCookingListItemOutput{
-		list: outputItems,
+		List: outputItems,
 	}
 }

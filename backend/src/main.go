@@ -5,9 +5,12 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"kondait-backend/application/usecase"
 	"kondait-backend/handler"
 	"kondait-backend/infra/config"
 	"kondait-backend/infra/db"
+	"kondait-backend/infra/repository"
+	"kondait-backend/middleware"
 )
 
 func main() {
@@ -23,7 +26,7 @@ func main() {
 	}
 
 	dbInitializer := db.NewDbInitializer()
-	_, err = dbInitializer.Open(cfg)
+	db, err := dbInitializer.Open(cfg)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -31,6 +34,12 @@ func main() {
 	e := echo.New()
 	healthHandler := handler.NewGetHealthHandler()
 	e.GET("/health", healthHandler.Handle)
+
+	recommendedCookingItemRepo := repository.NewRecommendedCookingItemRepository(db)
+	getRecommendedCookingItemsUsecase := usecase.NewGetRecommendedCookingItemsUsecase(recommendedCookingItemRepo)
+	getRecommendedCookingItemsHandler := handler.NewGetRecommendedCookingItemsHandler(getRecommendedCookingItemsUsecase)
+	authApiGroup := e.Group("/api/private", middleware.AuthMiddleware())
+	authApiGroup.GET("/cooking-items/recommends", getRecommendedCookingItemsHandler.Handle)
 
 	if err := e.Start(":" + cfg.Port); err != nil {
 		log.Fatalln(err)

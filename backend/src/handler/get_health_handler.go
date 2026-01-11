@@ -13,5 +13,5 @@ func NewGetHealthHandler() *GetHealthHandler {
 }
 
 func (h *GetHealthHandler) Handle(c echo.Context) error {
-	return c.String(http.StatusOK, "ok Hello")
+	return c.String(http.StatusOK, "ok")
 }
