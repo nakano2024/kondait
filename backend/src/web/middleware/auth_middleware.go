@@ -19,16 +19,21 @@ func AuthMiddleware(getPrincipalUsecase usecase.IGetPrincipalUsecase) echo.Middl
 
 			authHead := c.Request().Header.Get(echo.HeaderAuthorization)
 			if authHead == "" {
+				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+			}
+
+			const prefix = "Bearer "
+
+			if !strings.HasPrefix(authHead, prefix) {
 				return echo.NewHTTPError(http.StatusUnauthorized)
 			}
 
-			const Prefix = "Bearer "
+			authToken := strings.TrimPrefix(authHead, prefix)
 
-			if !strings.HasPrefix(authHead, Prefix) {
-				return echo.NewHTTPError(http.StatusUnauthorized)
+			if authToken == "" {
+				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 			}
 
-			authToken := strings.TrimPrefix(authHead, Prefix)
 			output, err := getPrincipalUsecase.Exec(usecase.GetPrincipalInput{
 				AuthToken: authToken,
 			})
@@ -38,7 +43,7 @@ func AuthMiddleware(getPrincipalUsecase usecase.IGetPrincipalUsecase) echo.Middl
 			}
 
 			c.Set("principal", dto.Principal{
-				ActorCode: output.UserCode,
+				ActorCode: output.ActorCode,
 				Scopes:    output.Scopes,
 			})
 			return next(c)

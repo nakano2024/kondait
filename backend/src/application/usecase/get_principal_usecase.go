@@ -8,8 +8,8 @@ import (
 )
 
 type PrincipalOutput struct {
-	UserCode string
-	Scopes   []string
+	ActorCode string
+	Scopes    []string
 }
 
 type GetPrincipalInput struct {
@@ -34,7 +34,7 @@ func NewGetPrincipalUsecase(authIntrospector auth.IAuthIntrospector, actorRepo r
 
 func (usecase *getPrincipalUsecase) Exec(input GetPrincipalInput) (PrincipalOutput, error) {
 	if usecase.authIntrospector == nil || usecase.actorRepo == nil {
-		return PrincipalOutput{}, errors.New("auth dependency not set")
+		return PrincipalOutput{}, errors.New("getPrincipalUsecase: dependency not set")
 	}
 
 	introspection, err := usecase.authIntrospector.Introspect(input.AuthToken)
@@ -53,7 +53,7 @@ func (usecase *getPrincipalUsecase) Exec(input GetPrincipalInput) (PrincipalOutp
 		return PrincipalOutput{}, errors.New("actor not found")
 	}
 	return PrincipalOutput{
-		UserCode: actor.Code,
-		Scopes:   introspection.Scopes,
+		ActorCode: actor.Code,
+		Scopes:    introspection.Scopes,
 	}, nil
 }
