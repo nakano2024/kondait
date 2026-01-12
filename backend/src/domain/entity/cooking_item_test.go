@@ -19,7 +19,7 @@ func TestNewExistingCookingItem_Normal(t *testing.T) {
 		expected *RecommendedCookingItem
 	}{
 		{
-			name: "set fields",
+			name: "フィールドを設定した場合、同値が返ること",
 			input: struct {
 				code           string
 				itemName       string
@@ -59,7 +59,7 @@ func TestRecommendedCookingItem_IsCooked_Normal(t *testing.T) {
 		item *RecommendedCookingItem
 	}{
 		{
-			name: "non-zero time",
+			name: "最終調理日時がゼロ以外の場合、調理済みを返すこと",
 			item: &RecommendedCookingItem{
 				Code:           "A1",
 				Name:           "Rice",
@@ -83,7 +83,7 @@ func TestRecommendedCookingItem_IsCooked_Abnormal(t *testing.T) {
 		item *RecommendedCookingItem
 	}{
 		{
-			name: "zero time",
+			name: "最終調理日時がゼロの場合、未調理を返すこと",
 			item: &RecommendedCookingItem{
 				Code:           "A1",
 				Name:           "Rice",
@@ -92,7 +92,7 @@ func TestRecommendedCookingItem_IsCooked_Abnormal(t *testing.T) {
 			},
 		},
 		{
-			name: "zero time",
+			name: "最終調理日時がゼロの場合、未調理を返すこと",
 			item: &RecommendedCookingItem{
 				Code:           "A1",
 				Name:           "Rice",

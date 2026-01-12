@@ -15,13 +15,13 @@ func TestNewRecommendedCookingItemList_Success(t *testing.T) {
 		items []*entity.RecommendedCookingItem
 	}{
 		{
-			name: "empty items",
+			name: "要素が空の場合、件数0で返ること",
 			items: []*entity.RecommendedCookingItem{
 				// empty
 			},
 		},
 		{
-			name: "five items",
+			name: "5件の場合、件数5で返ること",
 			items: []*entity.RecommendedCookingItem{
 				{Code: "A1", Name: "Rice", CookCount: 1, LastCookedDate: time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)},
 				{Code: "B2", Name: "Curry", CookCount: 2, LastCookedDate: time.Date(2024, 1, 3, 3, 4, 5, 0, time.UTC)},
@@ -48,7 +48,7 @@ func TestNewRecommendedCookingItemList_Failure(t *testing.T) {
 		items []*entity.RecommendedCookingItem
 	}{
 		{
-			name: "six items",
+			name: "6件の場合、エラーが返ること",
 			items: []*entity.RecommendedCookingItem{
 				{Code: "A1", Name: "Rice", CookCount: 1, LastCookedDate: time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)},
 				{Code: "B2", Name: "Curry", CookCount: 2, LastCookedDate: time.Date(2024, 1, 3, 3, 4, 5, 0, time.UTC)},

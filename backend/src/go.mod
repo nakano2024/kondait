@@ -8,6 +8,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/stretchr/testify v1.9.0
+	go.uber.org/mock v0.4.0
 	gorm.io/driver/postgres v1.5.6
 	gorm.io/gorm v1.25.9
 )
