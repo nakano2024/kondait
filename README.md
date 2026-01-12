@@ -4,7 +4,7 @@
 
 ### Docker (recommended)
 ```
-docker compose -f docker-compose.testing.yml up --build --abort-on-container-exit --exit-code-from backend-test
+docker compose up --build --abort-on-container-exit --exit-code-from backend-test
 ```
 
 ### Local (PostgreSQL running on the host)
