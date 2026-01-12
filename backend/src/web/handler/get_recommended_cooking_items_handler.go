@@ -43,7 +43,7 @@ func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
 	}
 
 	output, err := handler.getRecCookingItmUsecase.Exec(usecase.ReccomendedCookingListFetchCondition{
-		UserCode: principal.UserCode,
+		UserCode: principal.ActorCode,
 	})
 
 	if err != nil {

@@ -5,6 +5,6 @@ const (
 )
 
 type Principal struct {
-	UserCode string
-	Scopes   []string
+	ActorCode string
+	Scopes    []string
 }

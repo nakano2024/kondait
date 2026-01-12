@@ -1,6 +1,11 @@
 package usecase
 
-import "kondait-backend/application/util"
+import (
+	"errors"
+
+	"kondait-backend/application/auth"
+	"kondait-backend/domain/repository"
+)
 
 type PrincipalOutput struct {
 	UserCode string
@@ -16,22 +21,39 @@ type IGetPrincipalUsecase interface {
 }
 
 type getPrincipalUsecase struct {
-	principalFecher util.IPrincipalFetcher
+	authIntrospector auth.IAuthIntrospector
+	actorRepo        repository.IActorRepository
 }
 
-func NewGetPrincipalUsecase(principalFetcher util.IPrincipalFetcher) IGetPrincipalUsecase {
+func NewGetPrincipalUsecase(authIntrospector auth.IAuthIntrospector, actorRepo repository.IActorRepository) IGetPrincipalUsecase {
 	return &getPrincipalUsecase{
-		principalFecher: principalFetcher,
+		authIntrospector: authIntrospector,
+		actorRepo:        actorRepo,
 	}
 }
 
 func (usecase *getPrincipalUsecase) Exec(input GetPrincipalInput) (PrincipalOutput, error) {
-	principal, err := usecase.principalFecher.FetchPrincipal(input.AuthToken)
+	if usecase.authIntrospector == nil || usecase.actorRepo == nil {
+		return PrincipalOutput{}, errors.New("auth dependency not set")
+	}
+
+	introspection, err := usecase.authIntrospector.Introspect(input.AuthToken)
 	if err != nil {
 		return PrincipalOutput{}, err
 	}
+	if !introspection.IsActive {
+		return PrincipalOutput{}, errors.New("inactive token")
+	}
+
+	actor, err := usecase.actorRepo.FetchBySub(introspection.Sub)
+	if err != nil {
+		return PrincipalOutput{}, err
+	}
+	if actor == nil {
+		return PrincipalOutput{}, errors.New("actor not found")
+	}
 	return PrincipalOutput{
-		UserCode: principal.UserCode,
-		Scopes:   principal.Scopes,
+		UserCode: actor.Code,
+		Scopes:   introspection.Scopes,
 	}, nil
 }

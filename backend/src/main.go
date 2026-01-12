@@ -6,10 +6,10 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"kondait-backend/application/usecase"
+	infraauth "kondait-backend/infra/auth"
 	"kondait-backend/infra/config"
 	"kondait-backend/infra/db"
 	"kondait-backend/infra/repository"
-	infrautil "kondait-backend/infra/util"
 	"kondait-backend/web/handler"
 	"kondait-backend/web/middleware"
 )
@@ -38,9 +38,15 @@ func main() {
 
 	var getPrincipalUsecase usecase.IGetPrincipalUsecase
 	if cfg.Env == config.EnvDevelopment {
-		getPrincipalUsecase = usecase.NewGetPrincipalUsecase(infrautil.NewPrincipalFetcherMock())
+		getPrincipalUsecase = usecase.NewGetPrincipalUsecase(
+			infraauth.NewAuthIntrospectorMock(),
+			repository.NewActorRepositoryMock(),
+		)
 	} else {
-		getPrincipalUsecase = usecase.NewGetPrincipalUsecase(infrautil.NewPrincipalFetcher())
+		getPrincipalUsecase = usecase.NewGetPrincipalUsecase(
+			infraauth.NewAuthIntrospector(),
+			repository.NewActorRepository(db),
+		)
 	}
 
 	getRecommendedCookingItemsUsecase := usecase.NewGetRecommendedCookingItemsUsecase(repository.NewRecommendedCookingItemRepository(db))

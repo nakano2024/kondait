@@ -38,8 +38,8 @@ func AuthMiddleware(getPrincipalUsecase usecase.IGetPrincipalUsecase) echo.Middl
 			}
 
 			c.Set("principal", dto.Principal{
-				UserCode: output.UserCode,
-				Scopes:   output.Scopes,
+				ActorCode: output.UserCode,
+				Scopes:    output.Scopes,
 			})
 			return next(c)
 		}
