@@ -1,4 +1,4 @@
-package auth
+package dto
 
 const (
 	ScopeCookingItemsRead = "cooking-items.read"

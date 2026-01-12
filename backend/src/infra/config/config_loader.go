@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	Env        string
 	DBHost     string
 	DBPort     string
 	DBUser     string
@@ -15,6 +16,10 @@ type Config struct {
 	Port       string
 }
 
+const (
+	EnvDevelopment = "development"
+)
+
 type ConfigLoader struct{}
 
 func NewConfigLoader() *ConfigLoader {
@@ -22,6 +27,11 @@ func NewConfigLoader() *ConfigLoader {
 }
 
 func (cfgLoader *ConfigLoader) Load() (Config, error) {
+	env := os.Getenv("ENV")
+	if env == "" {
+		return Config{}, fmt.Errorf("ENV is empty")
+	}
+
 	dbHost := os.Getenv("DB_HOST")
 	if dbHost == "" {
 		return Config{}, fmt.Errorf("DB_HOST is empty")
@@ -58,6 +68,7 @@ func (cfgLoader *ConfigLoader) Load() (Config, error) {
 	}
 
 	return Config{
+		Env:        env,
 		DBHost:     dbHost,
 		DBPort:     dbPort,
 		DBUser:     dbUser,

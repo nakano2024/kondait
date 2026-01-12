@@ -8,14 +8,14 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"kondait-backend/application/usecase"
-	"kondait-backend/dto/auth"
+	"kondait-backend/web/dto"
 )
 
 type getRecommendedCookingItemsHandler struct {
-	getRecCookingItmUsecase usecase.GetRecommendedCookingItemsUsecase
+	getRecCookingItmUsecase usecase.IGetRecommendedCookingItemsUsecase
 }
 
-func NewGetRecommendedCookingItemsHandler(getRecCookingItmUsecase usecase.GetRecommendedCookingItemsUsecase) *getRecommendedCookingItemsHandler {
+func NewGetRecommendedCookingItemsHandler(getRecCookingItmUsecase usecase.IGetRecommendedCookingItemsUsecase) *getRecommendedCookingItemsHandler {
 	return &getRecommendedCookingItemsHandler{
 		getRecCookingItmUsecase: getRecCookingItmUsecase,
 	}
@@ -33,12 +33,12 @@ type response struct {
 }
 
 func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
-	principal, ok := c.Get("principal").(auth.Principal)
+	principal, ok := c.Get("principal").(dto.Principal)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized)
+		return echo.NewHTTPError(http.StatusInternalServerError, "principal is not set")
 	}
 
-	if !slices.Contains(principal.Scopes, auth.ScopeCookingItemsRead) {
+	if !slices.Contains(principal.Scopes, dto.ScopeCookingItemsRead) {
 		return echo.NewHTTPError(http.StatusForbidden)
 	}
 

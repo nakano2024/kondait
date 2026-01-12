@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile.dev
     environment:
+      ENV: development
       DB_HOST: db
       DB_PORT: "5432"
       DB_USER: postgres
@@ -25,6 +26,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile.testing
     environment:
+      ENV: development
       DB_HOST: db-test
       DB_PORT: "5432"
       DB_USER: postgres

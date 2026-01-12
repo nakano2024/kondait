@@ -22,7 +22,7 @@ type ReccomendedCookingListFetchCondition struct {
 	UserCode string
 }
 
-type GetRecommendedCookingItemsUsecase interface {
+type IGetRecommendedCookingItemsUsecase interface {
 	Exec(fCond ReccomendedCookingListFetchCondition) (ReccomendedCookingListItemOutput, error)
 }
 
@@ -32,7 +32,7 @@ type getRecommendedCookingItemsUsecase struct {
 
 func NewGetRecommendedCookingItemsUsecase(
 	repository repository.IRecommendedCookingItemRepository,
-) GetRecommendedCookingItemsUsecase {
+) IGetRecommendedCookingItemsUsecase {
 	return &getRecommendedCookingItemsUsecase{
 		repo: repository,
 	}

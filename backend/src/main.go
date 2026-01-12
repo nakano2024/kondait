@@ -6,11 +6,12 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"kondait-backend/application/usecase"
-	"kondait-backend/handler"
 	"kondait-backend/infra/config"
 	"kondait-backend/infra/db"
 	"kondait-backend/infra/repository"
-	"kondait-backend/middleware"
+	infrautil "kondait-backend/infra/util"
+	"kondait-backend/web/handler"
+	"kondait-backend/web/middleware"
 )
 
 func main() {
@@ -35,10 +36,16 @@ func main() {
 	healthHandler := handler.NewGetHealthHandler()
 	e.GET("/health", healthHandler.Handle)
 
-	recommendedCookingItemRepo := repository.NewRecommendedCookingItemRepository(db)
-	getRecommendedCookingItemsUsecase := usecase.NewGetRecommendedCookingItemsUsecase(recommendedCookingItemRepo)
+	var getPrincipalUsecase usecase.IGetPrincipalUsecase
+	if cfg.Env == config.EnvDevelopment {
+		getPrincipalUsecase = usecase.NewGetPrincipalUsecase(infrautil.NewPrincipalFetcherMock())
+	} else {
+		getPrincipalUsecase = usecase.NewGetPrincipalUsecase(infrautil.NewPrincipalFetcher())
+	}
+
+	getRecommendedCookingItemsUsecase := usecase.NewGetRecommendedCookingItemsUsecase(repository.NewRecommendedCookingItemRepository(db))
 	getRecommendedCookingItemsHandler := handler.NewGetRecommendedCookingItemsHandler(getRecommendedCookingItemsUsecase)
-	authApiGroup := e.Group("/api/private", middleware.AuthMiddleware())
+	authApiGroup := e.Group("/api/private", middleware.AuthMiddleware(getPrincipalUsecase))
 	authApiGroup.GET("/cooking-items/recommends", getRecommendedCookingItemsHandler.Handle)
 
 	if err := e.Start(":" + cfg.Port); err != nil {
