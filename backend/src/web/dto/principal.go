@@ -1,5 +1,7 @@
 package dto
 
+const PrincipalContextKeyName = "principal"
+
 const (
 	ScopeCookingItemsRead = "cooking-items.read"
 )

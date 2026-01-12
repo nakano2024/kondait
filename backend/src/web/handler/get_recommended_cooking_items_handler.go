@@ -33,7 +33,7 @@ type response struct {
 }
 
 func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
-	principal, ok := c.Get("principal").(dto.Principal)
+	principal, ok := c.Get(dto.PrincipalContextKeyName).(dto.Principal)
 	if !ok {
 		return echo.NewHTTPError(http.StatusInternalServerError, "principal is not set")
 	}

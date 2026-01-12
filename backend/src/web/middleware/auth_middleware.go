@@ -42,7 +42,7 @@ func AuthMiddleware(getPrincipalUsecase usecase.IGetPrincipalUsecase) echo.Middl
 				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 			}
 
-			c.Set("principal", dto.Principal{
+			c.Set(dto.PrincipalContextKeyName, dto.Principal{
 				ActorCode: output.ActorCode,
 				Scopes:    output.Scopes,
 			})
