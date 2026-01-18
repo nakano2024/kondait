@@ -5,6 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"context"
 	"kondait-backend/domain/aggregation"
 	"kondait-backend/domain/entity"
 	domainrepo "kondait-backend/domain/repository"
@@ -27,10 +28,10 @@ func NewRecommendedCookingItemRepository(db *gorm.DB) domainrepo.IRecommendedCoo
 	}
 }
 
-func (repo *recommendedCookingItemRepository) FetchByUserCode(uCode string) (*aggregation.RecommendedCookingItemList, error) {
+func (repo *recommendedCookingItemRepository) FetchByUserCode(ctx context.Context, uCode string) (*aggregation.RecommendedCookingItemList, error) {
 	var rows []recommendedCookingItemRow
 
-	err := repo.db.
+	err := repo.db.WithContext(ctx).
 		Table("cooking_items").
 		Select("code, name, cook_count, last_cooked_date").
 		Where("cooking_items.owner_code = ?", uCode).

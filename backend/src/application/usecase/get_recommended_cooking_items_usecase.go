@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"time"
 
 	"kondait-backend/domain/entity"
@@ -23,7 +24,7 @@ type ReccomendedCookingListFetchCondition struct {
 }
 
 type IGetRecommendedCookingItemsUsecase interface {
-	Exec(fCond ReccomendedCookingListFetchCondition) (ReccomendedCookingListItemOutput, error)
+	Exec(ctx context.Context, fCond ReccomendedCookingListFetchCondition) (ReccomendedCookingListItemOutput, error)
 }
 
 type getRecommendedCookingItemsUsecase struct {
@@ -38,8 +39,8 @@ func NewGetRecommendedCookingItemsUsecase(
 	}
 }
 
-func (usecase *getRecommendedCookingItemsUsecase) Exec(fCond ReccomendedCookingListFetchCondition) (ReccomendedCookingListItemOutput, error) {
-	list, err := usecase.repo.FetchByUserCode(fCond.UserCode)
+func (usecase *getRecommendedCookingItemsUsecase) Exec(ctx context.Context, fCond ReccomendedCookingListFetchCondition) (ReccomendedCookingListItemOutput, error) {
+	list, err := usecase.repo.FetchByUserCode(ctx, fCond.UserCode)
 	if err != nil {
 		return ReccomendedCookingListItemOutput{}, err
 	}

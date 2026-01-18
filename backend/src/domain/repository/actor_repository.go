@@ -1,7 +1,10 @@
 package repository
 
-import "kondait-backend/domain/entity"
+import (
+	"context"
+	"kondait-backend/domain/entity"
+)
 
 type IActorRepository interface {
-	FetchBySub(sub string) (*entity.Actor, error)
+	FetchBySub(ctx context.Context, sub string) (*entity.Actor, error)
 }

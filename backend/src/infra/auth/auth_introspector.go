@@ -1,10 +1,18 @@
 package auth
 
-import "kondait-backend/application/auth"
+import (
+	"context"
 
-type authIntrospector struct{}
+	"kondait-backend/application/auth"
+	"kondait-backend/infra/config"
+)
 
-func (introspector *authIntrospector) Introspect(token string) (auth.AuthIntrospectionResult, error) {
+type authIntrospector struct {
+	config config.Config
+}
+
+func (introspector *authIntrospector) Introspect(ctx context.Context, token string) (auth.AuthIntrospectionResult, error) {
+	_ = ctx
 	return auth.AuthIntrospectionResult{
 		IsActive: true,
 		Sub:      "",
@@ -18,7 +26,8 @@ func NewAuthIntrospector() auth.IAuthIntrospector {
 
 type authIntrospectorMock struct{}
 
-func (introspector *authIntrospectorMock) Introspect(token string) (auth.AuthIntrospectionResult, error) {
+func (introspector *authIntrospectorMock) Introspect(ctx context.Context, token string) (auth.AuthIntrospectionResult, error) {
+	_ = ctx
 	return auth.AuthIntrospectionResult{
 		IsActive: true,
 		Sub:      "mock-sub",

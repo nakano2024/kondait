@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"context"
+
 	"gorm.io/gorm"
 
 	"kondait-backend/domain/entity"
@@ -17,8 +19,8 @@ func NewActorRepository(db *gorm.DB) domainrepo.IActorRepository {
 	}
 }
 
-func (repo *actorRepository) FetchBySub(sub string) (*entity.Actor, error) {
-	_ = repo.db
+func (repo *actorRepository) FetchBySub(ctx context.Context, sub string) (*entity.Actor, error) {
+	_ = repo.db.WithContext(ctx)
 	_ = sub
 	// TODO: implement actor lookup by sub.
 	return &entity.Actor{
@@ -32,7 +34,8 @@ func NewActorRepositoryMock() domainrepo.IActorRepository {
 	return &actorRepositoryMock{}
 }
 
-func (repo *actorRepositoryMock) FetchBySub(sub string) (*entity.Actor, error) {
+func (repo *actorRepositoryMock) FetchBySub(ctx context.Context, sub string) (*entity.Actor, error) {
+	_ = ctx
 	return &entity.Actor{
 		Code: "11111111-1111-1111-1111-111111111111",
 	}, nil

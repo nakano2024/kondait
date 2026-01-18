@@ -34,7 +34,7 @@ func AuthMiddleware(getPrincipalUsecase usecase.IGetPrincipalUsecase) echo.Middl
 				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 			}
 
-			output, err := getPrincipalUsecase.Exec(usecase.GetPrincipalInput{
+			output, err := getPrincipalUsecase.Exec(c.Request().Context(), usecase.GetPrincipalInput{
 				AuthToken: authToken,
 			})
 

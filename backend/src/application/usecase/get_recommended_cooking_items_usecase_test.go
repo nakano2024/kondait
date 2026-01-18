@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -34,40 +35,43 @@ func (m *MockRecommendedCookingItemRepository) EXPECT() *MockRecommendedCookingI
 	return m.recorder
 }
 
-func (m *MockRecommendedCookingItemRepository) FetchByUserCode(uCode string) (*aggregation.RecommendedCookingItemList, error) {
+func (m *MockRecommendedCookingItemRepository) FetchByUserCode(ctx context.Context, uCode string) (*aggregation.RecommendedCookingItemList, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FetchByUserCode", uCode)
+	ret := m.ctrl.Call(m, "FetchByUserCode", ctx, uCode)
 	ret0 := ret[0].(*aggregation.RecommendedCookingItemList)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (mr *MockRecommendedCookingItemRepositoryMockRecorder) FetchByUserCode(uCode interface{}) *gomock.Call {
+func (mr *MockRecommendedCookingItemRepositoryMockRecorder) FetchByUserCode(ctx interface{}, uCode interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchByUserCode", reflect.TypeOf((*MockRecommendedCookingItemRepository)(nil).FetchByUserCode), uCode)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchByUserCode", reflect.TypeOf((*MockRecommendedCookingItemRepository)(nil).FetchByUserCode), ctx, uCode)
 }
 
 func TestGetRecommendedCookingItemsUsecase_Exec_Success(t *testing.T) {
 	testTable := []struct {
 		name      string
+		ctx       context.Context
 		fetchCond ReccomendedCookingListFetchCondition
 		expected  ReccomendedCookingListItemOutput
-		setupMock func(t *testing.T, ctrl *gomock.Controller) repository.IRecommendedCookingItemRepository
+		setupMock func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) repository.IRecommendedCookingItemRepository
 	}{
 		{
 			name:      "要素が空の場合、空の一覧を返すこと",
+			ctx:       context.WithValue(context.Background(), "ctx-key-1", "ctx-1"),
 			fetchCond: ReccomendedCookingListFetchCondition{UserCode: "user-1"},
 			expected:  ReccomendedCookingListItemOutput{List: []ReccomendedCookingOutputItem{}},
-			setupMock: func(t *testing.T, ctrl *gomock.Controller) repository.IRecommendedCookingItemRepository {
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) repository.IRecommendedCookingItemRepository {
 				repo := NewMockRecommendedCookingItemRepository(ctrl)
 				list, err := aggregation.NewRecommendedCookingItemList([]*entity.RecommendedCookingItem{})
 				require.NoError(t, err)
-				repo.EXPECT().FetchByUserCode("user-1").Return(list, error(nil))
+				repo.EXPECT().FetchByUserCode(ctx, "user-1").Return(list, error(nil))
 				return repo
 			},
 		},
 		{
 			name:      "5件の場合、5件の一覧を返すこと",
+			ctx:       context.WithValue(context.Background(), "ctx-key-2", "ctx-2"),
 			fetchCond: ReccomendedCookingListFetchCondition{UserCode: "user-2"},
 			expected: ReccomendedCookingListItemOutput{List: []ReccomendedCookingOutputItem{
 				{Code: "A1", Name: "Rice", CookCount: 1, LastCookedDate: time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)},
@@ -76,7 +80,7 @@ func TestGetRecommendedCookingItemsUsecase_Exec_Success(t *testing.T) {
 				{Code: "D4", Name: "Pasta", CookCount: 4, LastCookedDate: time.Date(2024, 1, 5, 3, 4, 5, 0, time.UTC)},
 				{Code: "E5", Name: "Salad", CookCount: 5, LastCookedDate: time.Date(2024, 1, 6, 3, 4, 5, 0, time.UTC)},
 			}},
-			setupMock: func(t *testing.T, ctrl *gomock.Controller) repository.IRecommendedCookingItemRepository {
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) repository.IRecommendedCookingItemRepository {
 				repo := NewMockRecommendedCookingItemRepository(ctrl)
 				list, err := aggregation.NewRecommendedCookingItemList([]*entity.RecommendedCookingItem{
 					{Code: "A1", Name: "Rice", CookCount: 1, LastCookedDate: time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)},
@@ -86,7 +90,7 @@ func TestGetRecommendedCookingItemsUsecase_Exec_Success(t *testing.T) {
 					{Code: "E5", Name: "Salad", CookCount: 5, LastCookedDate: time.Date(2024, 1, 6, 3, 4, 5, 0, time.UTC)},
 				})
 				require.NoError(t, err)
-				repo.EXPECT().FetchByUserCode("user-2").Return(list, error(nil))
+				repo.EXPECT().FetchByUserCode(ctx, "user-2").Return(list, error(nil))
 				return repo
 			},
 		},
@@ -96,10 +100,10 @@ func TestGetRecommendedCookingItemsUsecase_Exec_Success(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			repo := tt.setupMock(t, ctrl)
+			repo := tt.setupMock(t, ctrl, tt.ctx)
 			usecase := NewGetRecommendedCookingItemsUsecase(repo)
 
-			got, err := usecase.Exec(tt.fetchCond)
+			got, err := usecase.Exec(tt.ctx, tt.fetchCond)
 			require.NoError(t, err)
 			assert.Equal(t, tt.expected, got)
 		})
@@ -109,22 +113,26 @@ func TestGetRecommendedCookingItemsUsecase_Exec_Success(t *testing.T) {
 func TestGetRecommendedCookingItemsUsecase_Exec_Failure(t *testing.T) {
 	testTable := []struct {
 		name      string
+		ctx       context.Context
 		fetchCond ReccomendedCookingListFetchCondition
-		setupMock func(t *testing.T, ctrl *gomock.Controller) repository.IRecommendedCookingItemRepository
+		setupMock func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) repository.IRecommendedCookingItemRepository
 	}{
 		{
 			name:      "リポジトリエラーの場合、エラーが返ること",
+			ctx:       context.WithValue(context.Background(), "ctx-key-3", "ctx-3"),
 			fetchCond: ReccomendedCookingListFetchCondition{UserCode: "user-1"},
-			setupMock: func(t *testing.T, ctrl *gomock.Controller) repository.IRecommendedCookingItemRepository {
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) repository.IRecommendedCookingItemRepository {
 				repo := NewMockRecommendedCookingItemRepository(ctrl)
-				repo.EXPECT().FetchByUserCode("user-1").Return((*aggregation.RecommendedCookingItemList)(nil), errors.New("repository error"))
+				repo.EXPECT().FetchByUserCode(ctx, "user-1").
+					Return((*aggregation.RecommendedCookingItemList)(nil), errors.New("repository error"))
 				return repo
 			},
 		},
 		{
 			name:      "6件の場合、エラーが返ること",
+			ctx:       context.WithValue(context.Background(), "ctx-key-4", "ctx-4"),
 			fetchCond: ReccomendedCookingListFetchCondition{UserCode: "user-2"},
-			setupMock: func(t *testing.T, ctrl *gomock.Controller) repository.IRecommendedCookingItemRepository {
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) repository.IRecommendedCookingItemRepository {
 				repo := NewMockRecommendedCookingItemRepository(ctrl)
 				list, err := aggregation.NewRecommendedCookingItemList([]*entity.RecommendedCookingItem{
 					{Code: "A1", Name: "Rice", CookCount: 1, LastCookedDate: time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)},
@@ -135,7 +143,7 @@ func TestGetRecommendedCookingItemsUsecase_Exec_Failure(t *testing.T) {
 					{Code: "F6", Name: "Stew", CookCount: 6, LastCookedDate: time.Date(2024, 1, 7, 3, 4, 5, 0, time.UTC)},
 				})
 				require.Error(t, err)
-				repo.EXPECT().FetchByUserCode("user-2").Return(list, err)
+				repo.EXPECT().FetchByUserCode(ctx, "user-2").Return(list, err)
 				return repo
 			},
 		},
@@ -145,10 +153,10 @@ func TestGetRecommendedCookingItemsUsecase_Exec_Failure(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			repo := tt.setupMock(t, ctrl)
+			repo := tt.setupMock(t, ctrl, tt.ctx)
 			usecase := NewGetRecommendedCookingItemsUsecase(repo)
 
-			got, err := usecase.Exec(tt.fetchCond)
+			got, err := usecase.Exec(tt.ctx, tt.fetchCond)
 			require.Error(t, err)
 			assert.Equal(t, ReccomendedCookingListItemOutput{}, got)
 			assert.Nil(t, got.List)

@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"errors"
 
 	"kondait-backend/application/auth"
@@ -17,7 +18,7 @@ type GetPrincipalInput struct {
 }
 
 type IGetPrincipalUsecase interface {
-	Exec(input GetPrincipalInput) (PrincipalOutput, error)
+	Exec(ctx context.Context, input GetPrincipalInput) (PrincipalOutput, error)
 }
 
 type getPrincipalUsecase struct {
@@ -32,12 +33,12 @@ func NewGetPrincipalUsecase(authIntrospector auth.IAuthIntrospector, actorRepo r
 	}
 }
 
-func (usecase *getPrincipalUsecase) Exec(input GetPrincipalInput) (PrincipalOutput, error) {
+func (usecase *getPrincipalUsecase) Exec(ctx context.Context, input GetPrincipalInput) (PrincipalOutput, error) {
 	if usecase.authIntrospector == nil || usecase.actorRepo == nil {
 		return PrincipalOutput{}, errors.New("getPrincipalUsecase: dependency not set")
 	}
 
-	introspection, err := usecase.authIntrospector.Introspect(input.AuthToken)
+	introspection, err := usecase.authIntrospector.Introspect(ctx, input.AuthToken)
 	if err != nil {
 		return PrincipalOutput{}, err
 	}
@@ -45,7 +46,7 @@ func (usecase *getPrincipalUsecase) Exec(input GetPrincipalInput) (PrincipalOutp
 		return PrincipalOutput{}, errors.New("inactive token")
 	}
 
-	actor, err := usecase.actorRepo.FetchBySub(introspection.Sub)
+	actor, err := usecase.actorRepo.FetchBySub(ctx, introspection.Sub)
 	if err != nil {
 		return PrincipalOutput{}, err
 	}

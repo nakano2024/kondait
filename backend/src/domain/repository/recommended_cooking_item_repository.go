@@ -1,7 +1,10 @@
 package repository
 
-import "kondait-backend/domain/aggregation"
+import (
+	"context"
+	"kondait-backend/domain/aggregation"
+)
 
 type IRecommendedCookingItemRepository interface {
-	FetchByUserCode(uCode string) (*aggregation.RecommendedCookingItemList, error)
+	FetchByUserCode(ctx context.Context, uCode string) (*aggregation.RecommendedCookingItemList, error)
 }

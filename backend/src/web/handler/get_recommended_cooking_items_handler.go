@@ -42,7 +42,7 @@ func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden)
 	}
 
-	output, err := handler.getRecCookingItmUsecase.Exec(usecase.ReccomendedCookingListFetchCondition{
+	output, err := handler.getRecCookingItmUsecase.Exec(c.Request().Context(), usecase.ReccomendedCookingListFetchCondition{
 		UserCode: principal.ActorCode,
 	})
 

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -27,11 +28,13 @@ const (
 func TestRecommendedCookingItemRepository_FetchByUserCode_Normal(t *testing.T) {
 	testTable := []struct {
 		name     string
+		ctx      context.Context
 		userCode string
 		expected *aggregation.RecommendedCookingItemList
 	}{
 		{
 			name:     "order by cook_count, then last_cooked_date (nulls first), take top 5",
+			ctx:      context.WithValue(context.Background(), "ctx-key-1", "ctx-1"),
 			userCode: testUserCode,
 			expected: &aggregation.RecommendedCookingItemList{
 				Items: []*entity.RecommendedCookingItem{
@@ -83,7 +86,7 @@ func TestRecommendedCookingItemRepository_FetchByUserCode_Normal(t *testing.T) {
 			loadTestData(t, tx)
 
 			repo := NewRecommendedCookingItemRepository(tx)
-			got, err := repo.FetchByUserCode(tt.userCode)
+			got, err := repo.FetchByUserCode(tt.ctx, tt.userCode)
 			require.NoError(t, err)
 			require.NotNil(t, got)
 

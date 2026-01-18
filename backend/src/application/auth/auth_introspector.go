@@ -1,5 +1,7 @@
 package auth
 
+import "context"
+
 type AuthIntrospectionResult struct {
 	IsActive bool
 	Sub      string
@@ -7,5 +9,5 @@ type AuthIntrospectionResult struct {
 }
 
 type IAuthIntrospector interface {
-	Introspect(token string) (AuthIntrospectionResult, error)
+	Introspect(ctx context.Context, token string) (AuthIntrospectionResult, error)
 }

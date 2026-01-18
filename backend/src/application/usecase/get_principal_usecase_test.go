@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -32,17 +33,17 @@ func (m *MockAuthIntrospector) EXPECT() *MockAuthIntrospectorMockRecorder {
 	return m.recorder
 }
 
-func (m *MockAuthIntrospector) Introspect(token string) (auth.AuthIntrospectionResult, error) {
+func (m *MockAuthIntrospector) Introspect(ctx context.Context, token string) (auth.AuthIntrospectionResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Introspect", token)
+	ret := m.ctrl.Call(m, "Introspect", ctx, token)
 	ret0 := ret[0].(auth.AuthIntrospectionResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (mr *MockAuthIntrospectorMockRecorder) Introspect(token interface{}) *gomock.Call {
+func (mr *MockAuthIntrospectorMockRecorder) Introspect(ctx interface{}, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Introspect", reflect.TypeOf((*MockAuthIntrospector)(nil).Introspect), token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Introspect", reflect.TypeOf((*MockAuthIntrospector)(nil).Introspect), ctx, token)
 }
 
 type MockActorRepository struct {
@@ -64,42 +65,45 @@ func (m *MockActorRepository) EXPECT() *MockActorRepositoryMockRecorder {
 	return m.recorder
 }
 
-func (m *MockActorRepository) FetchBySub(sub string) (*entity.Actor, error) {
+func (m *MockActorRepository) FetchBySub(ctx context.Context, sub string) (*entity.Actor, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FetchBySub", sub)
+	ret := m.ctrl.Call(m, "FetchBySub", ctx, sub)
 	ret0 := ret[0].(*entity.Actor)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (mr *MockActorRepositoryMockRecorder) FetchBySub(sub interface{}) *gomock.Call {
+func (mr *MockActorRepositoryMockRecorder) FetchBySub(ctx interface{}, sub interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchBySub", reflect.TypeOf((*MockActorRepository)(nil).FetchBySub), sub)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchBySub", reflect.TypeOf((*MockActorRepository)(nil).FetchBySub), ctx, sub)
 }
 
 func TestGetPrincipalUsecase_Exec_Success(t *testing.T) {
 	testTable := []struct {
 		name      string
+		ctx       context.Context
 		input     GetPrincipalInput
 		expected  PrincipalOutput
-		setupMock func(t *testing.T, ctrl *gomock.Controller) (*MockAuthIntrospector, *MockActorRepository)
+		setupMock func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) (*MockAuthIntrospector, *MockActorRepository)
 	}{
 		{
 			name:  "トークンが有効でActorが取得できる場合、Principalが取得できること",
+			ctx:   context.WithValue(context.Background(), "ctx-key-1", "ctx-1"),
 			input: GetPrincipalInput{AuthToken: "token-1"},
 			expected: PrincipalOutput{
 				ActorCode: "actor-1",
 				Scopes:    []string{"scope-a"},
 			},
-			setupMock: func(t *testing.T, ctrl *gomock.Controller) (*MockAuthIntrospector, *MockActorRepository) {
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) (*MockAuthIntrospector, *MockActorRepository) {
 				authIntrospector := NewMockAuthIntrospector(ctrl)
 				actorRepo := NewMockActorRepository(ctrl)
-				authIntrospector.EXPECT().Introspect("token-1").Return(auth.AuthIntrospectionResult{
+				authIntrospector.EXPECT().Introspect(ctx, "token-1").Return(auth.AuthIntrospectionResult{
 					IsActive: true,
 					Sub:      "sub-1",
 					Scopes:   []string{"scope-a"},
 				}, error(nil))
-				actorRepo.EXPECT().FetchBySub("sub-1").Return(&entity.Actor{Code: "actor-1"}, error(nil))
+				actorRepo.EXPECT().FetchBySub(ctx, "sub-1").
+					Return(&entity.Actor{Code: "actor-1"}, error(nil))
 				return authIntrospector, actorRepo
 			},
 		},
@@ -109,10 +113,10 @@ func TestGetPrincipalUsecase_Exec_Success(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			authIntrospector, actorRepo := tt.setupMock(t, ctrl)
+			authIntrospector, actorRepo := tt.setupMock(t, ctrl, tt.ctx)
 			usecase := NewGetPrincipalUsecase(authIntrospector, actorRepo)
 
-			got, err := usecase.Exec(tt.input)
+			got, err := usecase.Exec(tt.ctx, tt.input)
 			require.NoError(t, err)
 			assert.Equal(t, tt.expected, got)
 		})
@@ -122,24 +126,27 @@ func TestGetPrincipalUsecase_Exec_Success(t *testing.T) {
 func TestGetPrincipalUsecase_Exec_Failure(t *testing.T) {
 	testTable := []struct {
 		name      string
+		ctx       context.Context
 		input     GetPrincipalInput
-		setupMock func(t *testing.T) (IGetPrincipalUsecase, func())
+		setupMock func(t *testing.T, ctx context.Context) (IGetPrincipalUsecase, func())
 	}{
 		{
 			name:  "依存未設定の場合、エラーが返ること",
+			ctx:   context.WithValue(context.Background(), "ctx-key-2", "ctx-2"),
 			input: GetPrincipalInput{AuthToken: "token-1"},
-			setupMock: func(t *testing.T) (IGetPrincipalUsecase, func()) {
+			setupMock: func(t *testing.T, ctx context.Context) (IGetPrincipalUsecase, func()) {
 				return NewGetPrincipalUsecase(nil, nil), func() {}
 			},
 		},
 		{
 			name:  "イントロスペクションが失敗した場合、エラーが返ること",
+			ctx:   context.WithValue(context.Background(), "ctx-key-3", "ctx-3"),
 			input: GetPrincipalInput{AuthToken: "token-2"},
-			setupMock: func(t *testing.T) (IGetPrincipalUsecase, func()) {
+			setupMock: func(t *testing.T, ctx context.Context) (IGetPrincipalUsecase, func()) {
 				ctrl := gomock.NewController(t)
 				authIntrospector := NewMockAuthIntrospector(ctrl)
 				actorRepo := NewMockActorRepository(ctrl)
-				authIntrospector.EXPECT().Introspect("token-2").Return(auth.AuthIntrospectionResult{
+				authIntrospector.EXPECT().Introspect(ctx, "token-2").Return(auth.AuthIntrospectionResult{
 					IsActive: true,
 					Sub:      "sub-2",
 					Scopes:   []string{"scope-a"},
@@ -150,12 +157,13 @@ func TestGetPrincipalUsecase_Exec_Failure(t *testing.T) {
 		},
 		{
 			name:  "トークンが無効の場合、エラーが返ること",
+			ctx:   context.WithValue(context.Background(), "ctx-key-4", "ctx-4"),
 			input: GetPrincipalInput{AuthToken: "token-3"},
-			setupMock: func(t *testing.T) (IGetPrincipalUsecase, func()) {
+			setupMock: func(t *testing.T, ctx context.Context) (IGetPrincipalUsecase, func()) {
 				ctrl := gomock.NewController(t)
 				authIntrospector := NewMockAuthIntrospector(ctrl)
 				actorRepo := NewMockActorRepository(ctrl)
-				authIntrospector.EXPECT().Introspect("token-3").Return(auth.AuthIntrospectionResult{
+				authIntrospector.EXPECT().Introspect(ctx, "token-3").Return(auth.AuthIntrospectionResult{
 					IsActive: false,
 					Sub:      "sub-3",
 					Scopes:   []string{"scope-b"},
@@ -166,34 +174,38 @@ func TestGetPrincipalUsecase_Exec_Failure(t *testing.T) {
 		},
 		{
 			name:  "Actorが存在しない場合、エラーが返ること",
+			ctx:   context.WithValue(context.Background(), "ctx-key-5", "ctx-5"),
 			input: GetPrincipalInput{AuthToken: "token-4"},
-			setupMock: func(t *testing.T) (IGetPrincipalUsecase, func()) {
+			setupMock: func(t *testing.T, ctx context.Context) (IGetPrincipalUsecase, func()) {
 				ctrl := gomock.NewController(t)
 				authIntrospector := NewMockAuthIntrospector(ctrl)
 				actorRepo := NewMockActorRepository(ctrl)
-				authIntrospector.EXPECT().Introspect("token-4").Return(auth.AuthIntrospectionResult{
+				authIntrospector.EXPECT().Introspect(ctx, "token-4").Return(auth.AuthIntrospectionResult{
 					IsActive: true,
 					Sub:      "sub-4",
 					Scopes:   []string{"scope-c"},
 				}, error(nil))
-				actorRepo.EXPECT().FetchBySub("sub-4").Return((*entity.Actor)(nil), error(nil))
+				actorRepo.EXPECT().FetchBySub(ctx, "sub-4").
+					Return((*entity.Actor)(nil), error(nil))
 				usecase := NewGetPrincipalUsecase(authIntrospector, actorRepo)
 				return usecase, ctrl.Finish
 			},
 		},
 		{
 			name:  "Actorリポジトリエラーの場合、エラーが返ること",
+			ctx:   context.WithValue(context.Background(), "ctx-key-6", "ctx-6"),
 			input: GetPrincipalInput{AuthToken: "token-5"},
-			setupMock: func(t *testing.T) (IGetPrincipalUsecase, func()) {
+			setupMock: func(t *testing.T, ctx context.Context) (IGetPrincipalUsecase, func()) {
 				ctrl := gomock.NewController(t)
 				authIntrospector := NewMockAuthIntrospector(ctrl)
 				actorRepo := NewMockActorRepository(ctrl)
-				authIntrospector.EXPECT().Introspect("token-5").Return(auth.AuthIntrospectionResult{
+				authIntrospector.EXPECT().Introspect(ctx, "token-5").Return(auth.AuthIntrospectionResult{
 					IsActive: true,
 					Sub:      "sub-5",
 					Scopes:   []string{"scope-d"},
 				}, error(nil))
-				actorRepo.EXPECT().FetchBySub("sub-5").Return((*entity.Actor)(nil), errors.New("repository error"))
+				actorRepo.EXPECT().FetchBySub(ctx, "sub-5").
+					Return((*entity.Actor)(nil), errors.New("repository error"))
 				usecase := NewGetPrincipalUsecase(authIntrospector, actorRepo)
 				return usecase, ctrl.Finish
 			},
@@ -202,9 +214,9 @@ func TestGetPrincipalUsecase_Exec_Failure(t *testing.T) {
 
 	for _, tt := range testTable {
 		t.Run(tt.name, func(t *testing.T) {
-			usecase, finish := tt.setupMock(t)
+			usecase, finish := tt.setupMock(t, tt.ctx)
 			defer finish()
-			got, err := usecase.Exec(tt.input)
+			got, err := usecase.Exec(tt.ctx, tt.input)
 			require.Error(t, err)
 			assert.Equal(t, PrincipalOutput{}, got)
 			assert.Nil(t, got.Scopes)
