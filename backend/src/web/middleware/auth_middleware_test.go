@@ -159,12 +159,25 @@ func TestAuthMiddleware_Failure(t *testing.T) {
 			name:           "ユースケースが失敗した場合、401を返すこと",
 			ctx:            context.WithValue(context.Background(), "ctx-key-6", "ctx-6"),
 			authHeader:     "Bearer token-3",
-			expectedStatus: http.StatusUnauthorized,
+			expectedStatus: http.StatusInternalServerError,
 			setupMock: func(t *testing.T, ctx context.Context) (usecase.IGetPrincipalUsecase, func()) {
 				ctrl := gomock.NewController(t)
 				usecaseMock := NewMockGetPrincipalUsecase(ctrl)
 				usecaseMock.EXPECT().Exec(ctx, usecase.GetPrincipalInput{AuthToken: "token-3"}).
 					Return(usecase.PrincipalOutput{}, errors.New("unauthorized"))
+				return usecaseMock, ctrl.Finish
+			},
+		},
+		{
+			name:           "トークンが無効の場合、401を返すこと",
+			ctx:            context.WithValue(context.Background(), "ctx-key-7", "ctx-7"),
+			authHeader:     "Bearer token-4",
+			expectedStatus: http.StatusUnauthorized,
+			setupMock: func(t *testing.T, ctx context.Context) (usecase.IGetPrincipalUsecase, func()) {
+				ctrl := gomock.NewController(t)
+				usecaseMock := NewMockGetPrincipalUsecase(ctrl)
+				usecaseMock.EXPECT().Exec(ctx, usecase.GetPrincipalInput{AuthToken: "token-4"}).
+					Return(usecase.PrincipalOutput{}, &usecase.TokenInvalidError{})
 				return usecaseMock, ctrl.Finish
 			},
 		},

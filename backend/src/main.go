@@ -2,14 +2,17 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 
+	appauth "kondait-backend/application/auth"
 	"kondait-backend/application/usecase"
 	infraauth "kondait-backend/infra/auth"
 	"kondait-backend/infra/config"
 	"kondait-backend/infra/db"
 	"kondait-backend/infra/repository"
+	infrautil "kondait-backend/infra/util"
 	"kondait-backend/web/handler"
 	"kondait-backend/web/middleware"
 )
@@ -32,22 +35,25 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	httpClient := &http.Client{
+		Transport: &http.Transport{},
+	}
+
 	e := echo.New()
 	healthHandler := handler.NewGetHealthHandler()
 	e.GET("/health", healthHandler.Handle)
 
-	var getPrincipalUsecase usecase.IGetPrincipalUsecase
+	var introspector appauth.IAuthIntrospector
 	if cfg.Env == config.EnvDevelopment {
-		getPrincipalUsecase = usecase.NewGetPrincipalUsecase(
-			infraauth.NewAuthIntrospectorMock(),
-			repository.NewActorRepositoryMock(),
-		)
+		introspector = infraauth.NewAuthIntrospectorMock()
 	} else {
-		getPrincipalUsecase = usecase.NewGetPrincipalUsecase(
-			infraauth.NewAuthIntrospector(),
-			repository.NewActorRepository(db),
-		)
+		introspector = infraauth.NewAuthIntrospector(cfg, httpClient)
 	}
+	getPrincipalUsecase := usecase.NewGetPrincipalUsecase(
+		introspector,
+		repository.NewActorRepository(db),
+		infrautil.NewUuidGenerator(),
+	)
 
 	getRecommendedCookingItemsUsecase := usecase.NewGetRecommendedCookingItemsUsecase(repository.NewRecommendedCookingItemRepository(db))
 	getRecommendedCookingItemsHandler := handler.NewGetRecommendedCookingItemsHandler(getRecommendedCookingItemsUsecase)

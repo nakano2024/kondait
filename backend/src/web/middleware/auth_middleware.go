@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -39,7 +40,11 @@ func AuthMiddleware(getPrincipalUsecase usecase.IGetPrincipalUsecase) echo.Middl
 			})
 
 			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+				var tokenInvalidErr *usecase.TokenInvalidError
+				if errors.As(err, &tokenInvalidErr) {
+					return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+				}
+				return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 			}
 
 			c.Set(dto.PrincipalContextKeyName, dto.Principal{

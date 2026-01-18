@@ -3,8 +3,8 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE users (
     code UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sub TEXT NOT NULL,
-    synced_at TIMESTAMPTZ,
+    sub TEXT NOT NULL UNIQUE,
+    synced_at TIMESTAMPTZ  NOT NULL DEFAULT now(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
