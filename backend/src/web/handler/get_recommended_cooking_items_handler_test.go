@@ -84,7 +84,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_Success(t *testing.T) {
 				Scopes:    []string{dto.ScopeCookingItemsRead},
 			},
 			expectedStatus: http.StatusOK,
-			expectedBody:   `{"recommended_cooking_items":[{"code":"A1","name":"Rice","cookCount":1,"last_cooked_date":"2024-01-02T03:04:05Z"}]}`,
+			expectedBody:   `{"recommended_cooking_items":[{"code":"A1","name":"Rice","cook_count":1,"last_cooked_date":"2024-01-02T03:04:05Z"}]}`,
 			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
 				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
 				usecaseMock.EXPECT().

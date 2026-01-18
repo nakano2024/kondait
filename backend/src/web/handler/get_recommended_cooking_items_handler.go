@@ -24,7 +24,7 @@ func NewGetRecommendedCookingItemsHandler(getRecCookingItmUsecase usecase.IGetRe
 type responseItem struct {
 	Code           string    `json:"code"`
 	Name           string    `json:"name"`
-	CookCount      uint      `json:"cookCount"`
+	CookCount      uint      `json:"cook_count"`
 	LastCookedDate time.Time `json:"last_cooked_date,omitempty"`
 }
 
