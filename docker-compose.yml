@@ -1,0 +1,70 @@
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    environment:
+      ENV: development
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: kondait
+      DB_SSLMODE: disable
+      DB_MIGRATIONS_PATH: /app/infra/migrations
+      PORT: "8080"
+      AUTH_SERVER_URL: "http://localhost:8001"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/src:/app
+    depends_on:
+      - db
+
+  backend-test:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.testing
+    environment:
+      ENV: development
+      DB_HOST: db-test
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: kondait_test
+      DB_SSLMODE: disable
+      DB_MIGRATIONS_PATH: /app/src/infra/migrations
+      TESTDATA_PATH: /app/src/infra/testdata
+    working_dir: /app/src
+    volumes:
+      - ./backend/src:/app/src
+    depends_on:
+      db-test:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kondait
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  db-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kondait_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d kondait_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:

@@ -6,14 +6,20 @@ import (
 )
 
 type Config struct {
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	DBSSLMode  string
-	Port       string
+	Env           string
+	DBHost        string
+	DBPort        string
+	DBUser        string
+	DBPassword    string
+	DBName        string
+	DBSSLMode     string
+	Port          string
+	AuthServerUrl string
 }
+
+const (
+	EnvDevelopment = "development"
+)
 
 type ConfigLoader struct{}
 
@@ -22,6 +28,11 @@ func NewConfigLoader() *ConfigLoader {
 }
 
 func (cfgLoader *ConfigLoader) Load() (Config, error) {
+	env := os.Getenv("ENV")
+	if env == "" {
+		return Config{}, fmt.Errorf("ENV is empty")
+	}
+
 	dbHost := os.Getenv("DB_HOST")
 	if dbHost == "" {
 		return Config{}, fmt.Errorf("DB_HOST is empty")
@@ -57,13 +68,20 @@ func (cfgLoader *ConfigLoader) Load() (Config, error) {
 		return Config{}, fmt.Errorf("PORT is empty")
 	}
 
+	authServerUrl := os.Getenv("AUTH_SERVER_URL")
+	if authServerUrl == "" {
+		return Config{}, fmt.Errorf("AUTH_SERVER_URL is empty")
+	}
+
 	return Config{
-		DBHost:     dbHost,
-		DBPort:     dbPort,
-		DBUser:     dbUser,
-		DBPassword: dbPassword,
-		DBName:     dbName,
-		DBSSLMode:  dbSSLMode,
-		Port:       port,
+		Env:           env,
+		DBHost:        dbHost,
+		DBPort:        dbPort,
+		DBUser:        dbUser,
+		DBPassword:    dbPassword,
+		DBName:        dbName,
+		DBSSLMode:     dbSSLMode,
+		Port:          port,
+		AuthServerUrl: authServerUrl,
 	}, nil
 }
