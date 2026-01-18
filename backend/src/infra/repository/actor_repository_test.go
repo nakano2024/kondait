@@ -25,10 +25,10 @@ func TestActorRepository_FetchBySub(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-1", "ctx-1"),
 			sub:  "sub-1",
 			seedData: func(t *testing.T, db *gorm.DB) {
-				require.NoError(t, db.Exec("INSERT INTO users (code, sub) VALUES (?, ?)", "code-1", "sub-1").Error)
+				require.NoError(t, db.Exec("INSERT INTO users (code, sub) VALUES (?, ?)", "11111111-1111-1111-1111-111111111111", "sub-1").Error)
 			},
 			expected: &entity.Actor{
-				Code: "code-1",
+				Code: "11111111-1111-1111-1111-111111111111",
 				Sub:  "sub-1",
 			},
 		},
@@ -37,7 +37,7 @@ func TestActorRepository_FetchBySub(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-2", "ctx-2"),
 			sub:  "sub-2",
 			seedData: func(t *testing.T, db *gorm.DB) {
-				require.NoError(t, db.Exec("INSERT INTO users (code, sub) VALUES (?, ?)", "code-2", "sub-3").Error)
+				require.NoError(t, db.Exec("INSERT INTO users (code, sub) VALUES (?, ?)", "22222222-2222-2222-2222-222222222222", "sub-3").Error)
 			},
 			expected: (*entity.Actor)(nil),
 		},
@@ -75,31 +75,31 @@ func TestActorRepository_Save(t *testing.T) {
 		{
 			name:  "新規の場合、レコードが作成されること",
 			ctx:   context.WithValue(context.Background(), "ctx-key-3", "ctx-3"),
-			actor: &entity.Actor{Code: "code-1", Sub: "sub-1"},
+			actor: &entity.Actor{Code: "33333333-3333-3333-3333-333333333333", Sub: "sub-1"},
 			seedData: func(t *testing.T, db *gorm.DB) {
 				require.NoError(t, db.Exec("DELETE FROM users").Error)
 			},
-			expectedUser:  model.User{Code: "code-1", Sub: "sub-1"},
+			expectedUser:  model.User{Code: "33333333-3333-3333-3333-333333333333", Sub: "sub-1"},
 			expectedCount: 1,
 		},
 		{
 			name:  "codeが存在する場合、subが更新されること",
 			ctx:   context.WithValue(context.Background(), "ctx-key-4", "ctx-4"),
-			actor: &entity.Actor{Code: "code-2", Sub: "sub-2"},
+			actor: &entity.Actor{Code: "44444444-4444-4444-4444-444444444444", Sub: "sub-2"},
 			seedData: func(t *testing.T, db *gorm.DB) {
-				require.NoError(t, db.Exec("INSERT INTO users (code, sub) VALUES (?, ?)", "code-2", "sub-old").Error)
+				require.NoError(t, db.Exec("INSERT INTO users (code, sub) VALUES (?, ?)", "44444444-4444-4444-4444-444444444444", "sub-old").Error)
 			},
-			expectedUser:  model.User{Code: "code-2", Sub: "sub-2"},
+			expectedUser:  model.User{Code: "44444444-4444-4444-4444-444444444444", Sub: "sub-2"},
 			expectedCount: 1,
 		},
 		{
 			name:  "subが存在する場合、codeが更新されること",
 			ctx:   context.WithValue(context.Background(), "ctx-key-5", "ctx-5"),
-			actor: &entity.Actor{Code: "code-new", Sub: "sub-3"},
+			actor: &entity.Actor{Code: "66666666-6666-6666-6666-666666666666", Sub: "sub-3"},
 			seedData: func(t *testing.T, db *gorm.DB) {
-				require.NoError(t, db.Exec("INSERT INTO users (code, sub) VALUES (?, ?)", "code-old", "sub-3").Error)
+				require.NoError(t, db.Exec("INSERT INTO users (code, sub) VALUES (?, ?)", "55555555-5555-5555-5555-555555555555", "sub-3").Error)
 			},
-			expectedUser:  model.User{Code: "code-new", Sub: "sub-3"},
+			expectedUser:  model.User{Code: "66666666-6666-6666-6666-666666666666", Sub: "sub-3"},
 			expectedCount: 1,
 		},
 	}
