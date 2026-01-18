@@ -29,7 +29,7 @@ type responseItem struct {
 }
 
 type response struct {
-	RecommendedCookingItems []responseItem `json:"recommended_cooking_items"`
+	RecommendedCookingItems []responseItem `json:"cooking_items"`
 }
 
 func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
