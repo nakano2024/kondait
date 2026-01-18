@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
@@ -33,6 +34,9 @@ func (introspector *authIntrospector) Introspect(ctx context.Context, token stri
 		return auth.AuthIntrospectionResult{}, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	credentials := introspector.config.ClientId + ":" + introspector.config.ClientSecret
+	encodedCredentials := base64.StdEncoding.EncodeToString([]byte(credentials))
+	req.Header.Set("Authorization", "Basic "+encodedCredentials)
 
 	resp, err := introspector.httpClient.Do(req)
 	if err != nil {
@@ -55,6 +59,7 @@ func (introspector *authIntrospector) Introspect(ctx context.Context, token stri
 		Sub    string `json:"sub"`
 		Scope  string `json:"scope"`
 	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&introspectionResponse); err != nil {
 		return auth.AuthIntrospectionResult{}, err
 	}

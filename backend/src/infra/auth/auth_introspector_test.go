@@ -60,7 +60,7 @@ func TestAuthIntrospector_Introspect_Success(t *testing.T) {
 		{
 			name:  "activeがtrueでスコープがある場合、結果が取得できること",
 			ctx:   context.WithValue(context.Background(), "ctx-key-1", "ctx-1"),
-			cfg:   config.Config{AuthServerUrl: "https://keycloak.example.com/realms/myrealm"},
+			cfg:   config.Config{AuthServerUrl: "https://keycloak.example.com/realms/myrealm", ClientId: "client-1", ClientSecret: "secret-1"},
 			token: "token-1",
 			setupMock: func(t *testing.T, ctrl *gomock.Controller) *http.Client {
 				transport := NewMockRoundTripper(ctrl)
@@ -68,6 +68,7 @@ func TestAuthIntrospector_Introspect_Success(t *testing.T) {
 					require.Equal(t, http.MethodPost, req.Method)
 					assert.Equal(t, "https://keycloak.example.com/realms/myrealm/protocol/openid-connect/token/introspect", req.URL.String())
 					assert.Equal(t, "application/x-www-form-urlencoded", req.Header.Get("Content-Type"))
+					assert.Equal(t, "Basic Y2xpZW50LTE6c2VjcmV0LTE=", req.Header.Get("Authorization"))
 					bodyBytes, err := io.ReadAll(req.Body)
 					require.NoError(t, err)
 					assert.Equal(t, "token=token-1", string(bodyBytes))
@@ -88,13 +89,14 @@ func TestAuthIntrospector_Introspect_Success(t *testing.T) {
 		{
 			name:  "activeがfalseでスコープが空の場合、空のスコープが取得できること",
 			ctx:   context.WithValue(context.Background(), "ctx-key-2", "ctx-2"),
-			cfg:   config.Config{AuthServerUrl: "https://keycloak.example.com/realms/myrealm/"},
+			cfg:   config.Config{AuthServerUrl: "https://keycloak.example.com/realms/myrealm/", ClientId: "client-2", ClientSecret: "secret-2"},
 			token: "token-2",
 			setupMock: func(t *testing.T, ctrl *gomock.Controller) *http.Client {
 				transport := NewMockRoundTripper(ctrl)
 				transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(req *http.Request) (*http.Response, error) {
 					require.Equal(t, http.MethodPost, req.Method)
 					assert.Equal(t, "https://keycloak.example.com/realms/myrealm/protocol/openid-connect/token/introspect", req.URL.String())
+					assert.Equal(t, "Basic Y2xpZW50LTI6c2VjcmV0LTI=", req.Header.Get("Authorization"))
 					resBody := `{"active":false,"sub":"user-id-2","scope":""}`
 					return &http.Response{
 						StatusCode: http.StatusOK,
@@ -138,11 +140,12 @@ func TestAuthIntrospector_Introspect_Failure(t *testing.T) {
 		{
 			name:  "レスポンスが400の場合、エラーが返ること",
 			ctx:   context.WithValue(context.Background(), "ctx-key-3", "ctx-3"),
-			cfg:   config.Config{AuthServerUrl: "https://keycloak.example.com/realms/myrealm"},
+			cfg:   config.Config{AuthServerUrl: "https://keycloak.example.com/realms/myrealm", ClientId: "client-3", ClientSecret: "secret-3"},
 			token: "token-3",
 			setupMock: func(t *testing.T, ctrl *gomock.Controller) *http.Client {
 				transport := NewMockRoundTripper(ctrl)
 				transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(req *http.Request) (*http.Response, error) {
+					assert.Equal(t, "Basic Y2xpZW50LTM6c2VjcmV0LTM=", req.Header.Get("Authorization"))
 					resBody := "bad request"
 					return &http.Response{
 						StatusCode: http.StatusBadRequest,
@@ -155,10 +158,30 @@ func TestAuthIntrospector_Introspect_Failure(t *testing.T) {
 			expectedErr: "bad request",
 		},
 		{
-			name:  "http clientがnilの場合、エラーが返ること",
+			name:  "レスポンスが401の場合、エラーが返ること",
 			ctx:   context.WithValue(context.Background(), "ctx-key-4", "ctx-4"),
-			cfg:   config.Config{AuthServerUrl: "https://keycloak.example.com/realms/myrealm"},
+			cfg:   config.Config{AuthServerUrl: "https://keycloak.example.com/realms/myrealm", ClientId: "client-4", ClientSecret: "secret-4"},
 			token: "token-4",
+			setupMock: func(t *testing.T, ctrl *gomock.Controller) *http.Client {
+				transport := NewMockRoundTripper(ctrl)
+				transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(req *http.Request) (*http.Response, error) {
+					assert.Equal(t, "Basic Y2xpZW50LTQ6c2VjcmV0LTQ=", req.Header.Get("Authorization"))
+					resBody := "unauthorized"
+					return &http.Response{
+						StatusCode: http.StatusUnauthorized,
+						Body:       io.NopCloser(strings.NewReader(resBody)),
+					}, error(nil)
+				})
+				return &http.Client{Transport: transport}
+			},
+			expected:    auth.AuthIntrospectionResult{},
+			expectedErr: "unauthorized",
+		},
+		{
+			name:  "http clientがnilの場合、エラーが返ること",
+			ctx:   context.WithValue(context.Background(), "ctx-key-5", "ctx-5"),
+			cfg:   config.Config{AuthServerUrl: "https://keycloak.example.com/realms/myrealm"},
+			token: "token-5",
 			setupMock: func(t *testing.T, ctrl *gomock.Controller) *http.Client {
 				return nil
 			},
