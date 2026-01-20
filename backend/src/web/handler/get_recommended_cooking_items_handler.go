@@ -39,10 +39,10 @@ func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
 	}
 
 	allowdScopes := []string{
-		dto.ScopeCookingItems,
-		dto.ScopeCookingItemsRead,
-		dto.ScopeCookingItemsWrite,
-		dto.ScopeCookingItemsDelete,
+		dto.ScopeCookingItem,
+		dto.ScopeCookingItemRead,
+		dto.ScopeCookingItemWrite,
+		dto.ScopeCookingItemDelete,
 	}
 	if !util.HasAnyScope(allowdScopes, principal.Scopes) {
 		return echo.NewHTTPError(http.StatusForbidden)

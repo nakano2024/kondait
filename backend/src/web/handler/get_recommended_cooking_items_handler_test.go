@@ -64,7 +64,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_Success(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-1", "ctx-1"),
 			principal: dto.Principal{
 				ActorCode: "actor-1",
-				Scopes:    []string{dto.ScopeCookingItemsRead},
+				Scopes:    []string{dto.ScopeCookingItemRead},
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"cooking_items":[]}`,
@@ -81,7 +81,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_Success(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-2", "ctx-2"),
 			principal: dto.Principal{
 				ActorCode: "actor-2",
-				Scopes:    []string{dto.ScopeCookingItemsRead},
+				Scopes:    []string{dto.ScopeCookingItemRead},
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"cooking_items":[{"code":"A1","name":"Rice","cook_count":1,"last_cooked_date":"2024-01-02T03:04:05Z"}]}`,
@@ -230,7 +230,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_ScopeAllowed(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-4-3", "ctx-4-3"),
 			principal: dto.Principal{
 				ActorCode: "actor-6",
-				Scopes:    []string{dto.ScopeCookingItems},
+				Scopes:    []string{dto.ScopeCookingItem},
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"cooking_items":[]}`,
@@ -247,7 +247,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_ScopeAllowed(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-4-4", "ctx-4-4"),
 			principal: dto.Principal{
 				ActorCode: "actor-7",
-				Scopes:    []string{dto.ScopeCookingItemsRead},
+				Scopes:    []string{dto.ScopeCookingItemRead},
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"cooking_items":[]}`,
@@ -264,7 +264,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_ScopeAllowed(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-4-5", "ctx-4-5"),
 			principal: dto.Principal{
 				ActorCode: "actor-8",
-				Scopes:    []string{dto.ScopeCookingItemsWrite},
+				Scopes:    []string{dto.ScopeCookingItemWrite},
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"cooking_items":[]}`,
@@ -281,7 +281,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_ScopeAllowed(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-4-6", "ctx-4-6"),
 			principal: dto.Principal{
 				ActorCode: "actor-9",
-				Scopes:    []string{dto.ScopeCookingItemsDelete},
+				Scopes:    []string{dto.ScopeCookingItemDelete},
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"cooking_items":[]}`,
@@ -298,7 +298,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_ScopeAllowed(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-4-7", "ctx-4-7"),
 			principal: dto.Principal{
 				ActorCode: "actor-10",
-				Scopes:    []string{dto.ScopeCookingItemsRead, dto.ScopeCookingItemsWrite},
+				Scopes:    []string{dto.ScopeCookingItemRead, dto.ScopeCookingItemWrite},
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"cooking_items":[]}`,
@@ -315,7 +315,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_ScopeAllowed(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-4-8", "ctx-4-8"),
 			principal: dto.Principal{
 				ActorCode: "actor-11",
-				Scopes:    []string{dto.ScopeCookingItems, dto.ScopeCookingItemsDelete},
+				Scopes:    []string{dto.ScopeCookingItem, dto.ScopeCookingItemDelete},
 			},
 			expectedStatus: http.StatusOK,
 			expectedBody:   `{"cooking_items":[]}`,
@@ -333,10 +333,10 @@ func TestGetRecommendedCookingItemsHandler_Handle_ScopeAllowed(t *testing.T) {
 			principal: dto.Principal{
 				ActorCode: "actor-12",
 				Scopes: []string{
-					dto.ScopeCookingItems,
-					dto.ScopeCookingItemsRead,
-					dto.ScopeCookingItemsWrite,
-					dto.ScopeCookingItemsDelete,
+					dto.ScopeCookingItem,
+					dto.ScopeCookingItemRead,
+					dto.ScopeCookingItemWrite,
+					dto.ScopeCookingItemDelete,
 				},
 			},
 			expectedStatus: http.StatusOK,
@@ -405,7 +405,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_UsecaseError(t *testing.T) {
 			c := e.NewContext(req, rec)
 			c.Set("principal", dto.Principal{
 				ActorCode: "actor-4",
-				Scopes:    []string{dto.ScopeCookingItemsRead},
+				Scopes:    []string{dto.ScopeCookingItemRead},
 			})
 			handler := NewGetRecommendedCookingItemsHandler(usecaseMock)
 

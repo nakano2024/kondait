@@ -3,10 +3,10 @@ package dto
 const PrincipalContextKeyName = "principal"
 
 const (
-	ScopeCookingItems       = "cooking-items"
-	ScopeCookingItemsRead   = "cooking-items.read"
-	ScopeCookingItemsWrite  = "cooking-items.write"
-	ScopeCookingItemsDelete = "cooking-items.delete"
+	ScopeCookingItem       = "cooking-item"
+	ScopeCookingItemRead   = "cooking-item.read"
+	ScopeCookingItemWrite  = "cooking-item.write"
+	ScopeCookingItemDelete = "cooking-item.delete"
 )
 
 type Principal struct {
