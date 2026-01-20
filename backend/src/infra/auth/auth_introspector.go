@@ -12,6 +12,7 @@ import (
 
 	"kondait-backend/application/auth"
 	"kondait-backend/infra/config"
+	"kondait-backend/web/dto"
 )
 
 type authIntrospector struct {
@@ -86,7 +87,7 @@ func (introspector *authIntrospectorMock) Introspect(ctx context.Context, token 
 		IsActive: true,
 		Sub:      "fac0fa00-7ee9-b423-813f-eee8e115ca17",
 		Scopes: []string{
-			"cooking-items.read",
+			dto.ScopeCookingItemsRead,
 		},
 	}, nil
 }

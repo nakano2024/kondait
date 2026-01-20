@@ -2,13 +2,13 @@ package handler
 
 import (
 	"net/http"
-	"slices"
 	"time"
 
 	"github.com/labstack/echo/v4"
 
 	"kondait-backend/application/usecase"
 	"kondait-backend/web/dto"
+	"kondait-backend/web/util"
 )
 
 type getRecommendedCookingItemsHandler struct {
@@ -38,7 +38,13 @@ func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "principal is not set")
 	}
 
-	if !slices.Contains(principal.Scopes, dto.ScopeCookingItemsRead) {
+	allowdScopes := []string{
+		dto.ScopeCookingItems,
+		dto.ScopeCookingItemsRead,
+		dto.ScopeCookingItemsWrite,
+		dto.ScopeCookingItemsDelete,
+	}
+	if !util.HasAnyScope(allowdScopes, principal.Scopes) {
 		return echo.NewHTTPError(http.StatusForbidden)
 	}
 
