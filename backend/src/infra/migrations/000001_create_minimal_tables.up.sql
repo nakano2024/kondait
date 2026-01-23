@@ -14,8 +14,6 @@ CREATE TABLE cooking_items (
     owner_code UUID NOT NULL,
     name TEXT NOT NULL,
     description TEXT,
-    cook_count INTEGER NOT NULL DEFAULT 0,
-    last_cooked_date DATE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT fk_cooking_items_owner
@@ -27,6 +25,21 @@ CREATE TABLE cooking_items (
 
 CREATE INDEX idx_cooking_items_owner_code
 ON cooking_items(owner_code);
+
+CREATE TABLE cooking_histories (
+    code UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    cooking_item_code UUID NOT NULL,
+    cooked_at DATE NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT fk_cooking_histories_cooking_item
+        FOREIGN KEY (cooking_item_code)
+        REFERENCES cooking_items(code)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_cooking_histories_cooking_item_code
+ON cooking_histories(cooking_item_code);
 
 -- updated_at を自動更新するトリガー
 CREATE OR REPLACE FUNCTION set_updated_at()
