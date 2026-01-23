@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS idx_cooking_histories_item_code_cooked_at;
