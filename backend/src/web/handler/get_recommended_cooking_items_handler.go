@@ -2,13 +2,13 @@ package handler
 
 import (
 	"net/http"
-	"slices"
 	"time"
 
 	"github.com/labstack/echo/v4"
 
 	"kondait-backend/application/usecase"
 	"kondait-backend/web/dto"
+	"kondait-backend/web/util"
 )
 
 type getRecommendedCookingItemsHandler struct {
@@ -24,12 +24,12 @@ func NewGetRecommendedCookingItemsHandler(getRecCookingItmUsecase usecase.IGetRe
 type responseItem struct {
 	Code           string    `json:"code"`
 	Name           string    `json:"name"`
-	CookCount      uint      `json:"cookCount"`
-	LastCookedDate time.Time `json:"last_cooked_date,omitempty"`
+	CookCount      uint      `json:"cook_count"`
+	LastCookedDate *time.Time `json:"last_cooked_date,omitempty"`
 }
 
 type response struct {
-	RecommendedCookingItems []responseItem `json:"recommended_cooking_items"`
+	RecommendedCookingItems []responseItem `json:"cooking_items"`
 }
 
 func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
@@ -38,7 +38,13 @@ func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "principal is not set")
 	}
 
-	if !slices.Contains(principal.Scopes, dto.ScopeCookingItemsRead) {
+	allowdScopes := []string{
+		dto.ScopeCookingItem,
+		dto.ScopeCookingItemRead,
+		dto.ScopeCookingItemWrite,
+		dto.ScopeCookingItemDelete,
+	}
+	if !util.HasAnyScope(allowdScopes, principal.Scopes) {
 		return echo.NewHTTPError(http.StatusForbidden)
 	}
 
@@ -55,11 +61,15 @@ func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
 func parseOutputToJson(output usecase.ReccomendedCookingListItemOutput) response {
 	resItems := make([]responseItem, 0, len(output.List))
 	for _, item := range output.List {
+		var lastCookedDate *time.Time
+		if !item.LastCookedDate.IsZero() {
+			lastCookedDate = &item.LastCookedDate
+		}
 		resItems = append(resItems, responseItem{
 			Code:           item.Code,
 			Name:           item.Name,
 			CookCount:      item.CookCount,
-			LastCookedDate: item.LastCookedDate,
+			LastCookedDate: lastCookedDate,
 		})
 	}
 

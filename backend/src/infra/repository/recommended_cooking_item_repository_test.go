@@ -47,7 +47,7 @@ func TestRecommendedCookingItemRepository_FetchByUserCode_Normal(t *testing.T) {
 					{
 						Code:           "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2",
 						Name:           "Pasta",
-						CookCount:      0,
+						CookCount:      1,
 						LastCookedDate: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 					},
 					{

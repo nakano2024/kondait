@@ -15,6 +15,8 @@ type Config struct {
 	DBSSLMode     string
 	Port          string
 	AuthServerUrl string
+	ClientId      string
+	ClientSecret  string
 }
 
 const (
@@ -73,6 +75,16 @@ func (cfgLoader *ConfigLoader) Load() (Config, error) {
 		return Config{}, fmt.Errorf("AUTH_SERVER_URL is empty")
 	}
 
+	clientId := os.Getenv("CLIENT_ID")
+	if clientId == "" {
+		return Config{}, fmt.Errorf("CLIENT_ID is empty")
+	}
+
+	clientSecret := os.Getenv("CLIENT_SECRET")
+	if clientSecret == "" {
+		return Config{}, fmt.Errorf("CLIENT_SECRET is empty")
+	}
+
 	return Config{
 		Env:           env,
 		DBHost:        dbHost,
@@ -83,5 +95,7 @@ func (cfgLoader *ConfigLoader) Load() (Config, error) {
 		DBSSLMode:     dbSSLMode,
 		Port:          port,
 		AuthServerUrl: authServerUrl,
+		ClientId:      clientId,
+		ClientSecret:  clientSecret,
 	}, nil
 }

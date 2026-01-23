@@ -64,10 +64,10 @@ func TestGetRecommendedCookingItemsHandler_Handle_Success(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-1", "ctx-1"),
 			principal: dto.Principal{
 				ActorCode: "actor-1",
-				Scopes:    []string{dto.ScopeCookingItemsRead},
+				Scopes:    []string{dto.ScopeCookingItemRead},
 			},
 			expectedStatus: http.StatusOK,
-			expectedBody:   `{"recommended_cooking_items":[]}`,
+			expectedBody:   `{"cooking_items":[]}`,
 			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
 				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
 				usecaseMock.EXPECT().
@@ -81,10 +81,10 @@ func TestGetRecommendedCookingItemsHandler_Handle_Success(t *testing.T) {
 			ctx:  context.WithValue(context.Background(), "ctx-key-2", "ctx-2"),
 			principal: dto.Principal{
 				ActorCode: "actor-2",
-				Scopes:    []string{dto.ScopeCookingItemsRead},
+				Scopes:    []string{dto.ScopeCookingItemRead},
 			},
 			expectedStatus: http.StatusOK,
-			expectedBody:   `{"recommended_cooking_items":[{"code":"A1","name":"Rice","cookCount":1,"last_cooked_date":"2024-01-02T03:04:05Z"}]}`,
+			expectedBody:   `{"cooking_items":[{"code":"A1","name":"Rice","cook_count":1,"last_cooked_date":"2024-01-02T03:04:05Z"}]}`,
 			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
 				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
 				usecaseMock.EXPECT().
@@ -96,6 +96,32 @@ func TestGetRecommendedCookingItemsHandler_Handle_Success(t *testing.T) {
 								Name:           "Rice",
 								CookCount:      1,
 								LastCookedDate: time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC),
+							},
+						},
+					}, error(nil))
+				return usecaseMock
+			},
+		},
+		{
+			name: "last_cooked_dateが0値の場合、last_cooked_dateを返さないこと",
+			ctx:  context.WithValue(context.Background(), "ctx-key-2-1", "ctx-2-1"),
+			principal: dto.Principal{
+				ActorCode: "actor-2-1",
+				Scopes:    []string{dto.ScopeCookingItemRead},
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody:   `{"cooking_items":[{"code":"A2","name":"Toast","cook_count":0}]}`,
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
+				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
+				usecaseMock.EXPECT().
+					Exec(ctx, usecase.ReccomendedCookingListFetchCondition{UserCode: "actor-2-1"}).
+					Return(usecase.ReccomendedCookingListItemOutput{
+						List: []usecase.ReccomendedCookingOutputItem{
+							{
+								Code:           "A2",
+								Name:           "Toast",
+								CookCount:      0,
+								LastCookedDate: time.Time{},
 							},
 						},
 					}, error(nil))
@@ -166,11 +192,29 @@ func TestGetRecommendedCookingItemsHandler_Handle_MissingScope(t *testing.T) {
 		expectedStatus int
 	}{
 		{
-			name: "スコープ不足の場合、403を返すこと",
+			name: "いずれのスコープも持たない場合、403を返すこと",
 			ctx:  context.WithValue(context.Background(), "ctx-key-4", "ctx-4"),
 			principal: dto.Principal{
 				ActorCode: "actor-3",
+				Scopes:    []string{},
+			},
+			expectedStatus: http.StatusForbidden,
+		},
+		{
+			name: "いずれにも当てはまらないスコープを1つ持つ場合、403を返すこと",
+			ctx:  context.WithValue(context.Background(), "ctx-key-4-1", "ctx-4-1"),
+			principal: dto.Principal{
+				ActorCode: "actor-4",
 				Scopes:    []string{"other-scope"},
+			},
+			expectedStatus: http.StatusForbidden,
+		},
+		{
+			name: "いずれにも当てはまらないスコープを2つ持つ場合、403を返すこと",
+			ctx:  context.WithValue(context.Background(), "ctx-key-4-2", "ctx-4-2"),
+			principal: dto.Principal{
+				ActorCode: "actor-5",
+				Scopes:    []string{"other-scope-1", "other-scope-2"},
 			},
 			expectedStatus: http.StatusForbidden,
 		},
@@ -198,6 +242,161 @@ func TestGetRecommendedCookingItemsHandler_Handle_MissingScope(t *testing.T) {
 	}
 }
 
+func TestGetRecommendedCookingItemsHandler_Handle_ScopeAllowed(t *testing.T) {
+	testTable := []struct {
+		name           string
+		ctx            context.Context
+		principal      dto.Principal
+		expectedStatus int
+		expectedBody   string
+		setupMock      func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase
+	}{
+		{
+			name: "cooking-itemsのみを持つ場合、200を返すこと",
+			ctx:  context.WithValue(context.Background(), "ctx-key-4-3", "ctx-4-3"),
+			principal: dto.Principal{
+				ActorCode: "actor-6",
+				Scopes:    []string{dto.ScopeCookingItem},
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody:   `{"cooking_items":[]}`,
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
+				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
+				usecaseMock.EXPECT().
+					Exec(ctx, usecase.ReccomendedCookingListFetchCondition{UserCode: "actor-6"}).
+					Return(usecase.ReccomendedCookingListItemOutput{List: []usecase.ReccomendedCookingOutputItem{}}, error(nil))
+				return usecaseMock
+			},
+		},
+		{
+			name: "cooking-items.readのみを持つ場合、200を返すこと",
+			ctx:  context.WithValue(context.Background(), "ctx-key-4-4", "ctx-4-4"),
+			principal: dto.Principal{
+				ActorCode: "actor-7",
+				Scopes:    []string{dto.ScopeCookingItemRead},
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody:   `{"cooking_items":[]}`,
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
+				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
+				usecaseMock.EXPECT().
+					Exec(ctx, usecase.ReccomendedCookingListFetchCondition{UserCode: "actor-7"}).
+					Return(usecase.ReccomendedCookingListItemOutput{List: []usecase.ReccomendedCookingOutputItem{}}, error(nil))
+				return usecaseMock
+			},
+		},
+		{
+			name: "cooking-items.writeのみを持つ場合、200を返すこと",
+			ctx:  context.WithValue(context.Background(), "ctx-key-4-5", "ctx-4-5"),
+			principal: dto.Principal{
+				ActorCode: "actor-8",
+				Scopes:    []string{dto.ScopeCookingItemWrite},
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody:   `{"cooking_items":[]}`,
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
+				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
+				usecaseMock.EXPECT().
+					Exec(ctx, usecase.ReccomendedCookingListFetchCondition{UserCode: "actor-8"}).
+					Return(usecase.ReccomendedCookingListItemOutput{List: []usecase.ReccomendedCookingOutputItem{}}, error(nil))
+				return usecaseMock
+			},
+		},
+		{
+			name: "cooking-items.deleteのみを持つ場合、200を返すこと",
+			ctx:  context.WithValue(context.Background(), "ctx-key-4-6", "ctx-4-6"),
+			principal: dto.Principal{
+				ActorCode: "actor-9",
+				Scopes:    []string{dto.ScopeCookingItemDelete},
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody:   `{"cooking_items":[]}`,
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
+				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
+				usecaseMock.EXPECT().
+					Exec(ctx, usecase.ReccomendedCookingListFetchCondition{UserCode: "actor-9"}).
+					Return(usecase.ReccomendedCookingListItemOutput{List: []usecase.ReccomendedCookingOutputItem{}}, error(nil))
+				return usecaseMock
+			},
+		},
+		{
+			name: "cooking-items.readとcooking-items.writeを持つ場合、200を返すこと",
+			ctx:  context.WithValue(context.Background(), "ctx-key-4-7", "ctx-4-7"),
+			principal: dto.Principal{
+				ActorCode: "actor-10",
+				Scopes:    []string{dto.ScopeCookingItemRead, dto.ScopeCookingItemWrite},
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody:   `{"cooking_items":[]}`,
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
+				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
+				usecaseMock.EXPECT().
+					Exec(ctx, usecase.ReccomendedCookingListFetchCondition{UserCode: "actor-10"}).
+					Return(usecase.ReccomendedCookingListItemOutput{List: []usecase.ReccomendedCookingOutputItem{}}, error(nil))
+				return usecaseMock
+			},
+		},
+		{
+			name: "cooking-itemsとcooking-items.deleteを持つ場合、200を返すこと",
+			ctx:  context.WithValue(context.Background(), "ctx-key-4-8", "ctx-4-8"),
+			principal: dto.Principal{
+				ActorCode: "actor-11",
+				Scopes:    []string{dto.ScopeCookingItem, dto.ScopeCookingItemDelete},
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody:   `{"cooking_items":[]}`,
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
+				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
+				usecaseMock.EXPECT().
+					Exec(ctx, usecase.ReccomendedCookingListFetchCondition{UserCode: "actor-11"}).
+					Return(usecase.ReccomendedCookingListItemOutput{List: []usecase.ReccomendedCookingOutputItem{}}, error(nil))
+				return usecaseMock
+			},
+		},
+		{
+			name: "4種類すべてを持つ場合、200を返すこと",
+			ctx:  context.WithValue(context.Background(), "ctx-key-4-9", "ctx-4-9"),
+			principal: dto.Principal{
+				ActorCode: "actor-12",
+				Scopes: []string{
+					dto.ScopeCookingItem,
+					dto.ScopeCookingItemRead,
+					dto.ScopeCookingItemWrite,
+					dto.ScopeCookingItemDelete,
+				},
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody:   `{"cooking_items":[]}`,
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
+				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
+				usecaseMock.EXPECT().
+					Exec(ctx, usecase.ReccomendedCookingListFetchCondition{UserCode: "actor-12"}).
+					Return(usecase.ReccomendedCookingListItemOutput{List: []usecase.ReccomendedCookingOutputItem{}}, error(nil))
+				return usecaseMock
+			},
+		},
+	}
+
+	for _, tt := range testTable {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			usecaseMock := tt.setupMock(t, ctrl, tt.ctx)
+			e := echo.New()
+			req := httptest.NewRequest(http.MethodGet, "/api/private/cooking-items/recommends", nil).WithContext(tt.ctx)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+			c.Set("principal", tt.principal)
+			handler := NewGetRecommendedCookingItemsHandler(usecaseMock)
+
+			err := handler.Handle(c)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedStatus, rec.Code)
+			assert.JSONEq(t, tt.expectedBody, rec.Body.String())
+		})
+	}
+}
+
 func TestGetRecommendedCookingItemsHandler_Handle_UsecaseError(t *testing.T) {
 	testTable := []struct {
 		name           string
@@ -210,7 +409,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_UsecaseError(t *testing.T) {
 			name:           "ユースケースが失敗した場合、200で空返却すること",
 			ctx:            context.WithValue(context.Background(), "ctx-key-5", "ctx-5"),
 			expectedStatus: http.StatusOK,
-			expectedBody:   `{"recommended_cooking_items":[]}`,
+			expectedBody:   `{"cooking_items":[]}`,
 			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
 				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
 				usecaseMock.EXPECT().
@@ -232,7 +431,7 @@ func TestGetRecommendedCookingItemsHandler_Handle_UsecaseError(t *testing.T) {
 			c := e.NewContext(req, rec)
 			c.Set("principal", dto.Principal{
 				ActorCode: "actor-4",
-				Scopes:    []string{dto.ScopeCookingItemsRead},
+				Scopes:    []string{dto.ScopeCookingItemRead},
 			})
 			handler := NewGetRecommendedCookingItemsHandler(usecaseMock)
 

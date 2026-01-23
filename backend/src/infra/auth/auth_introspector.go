@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
@@ -11,6 +12,7 @@ import (
 
 	"kondait-backend/application/auth"
 	"kondait-backend/infra/config"
+	"kondait-backend/web/dto"
 )
 
 type authIntrospector struct {
@@ -33,6 +35,9 @@ func (introspector *authIntrospector) Introspect(ctx context.Context, token stri
 		return auth.AuthIntrospectionResult{}, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	credentials := introspector.config.ClientId + ":" + introspector.config.ClientSecret
+	encodedCredentials := base64.StdEncoding.EncodeToString([]byte(credentials))
+	req.Header.Set("Authorization", "Basic "+encodedCredentials)
 
 	resp, err := introspector.httpClient.Do(req)
 	if err != nil {
@@ -55,6 +60,7 @@ func (introspector *authIntrospector) Introspect(ctx context.Context, token stri
 		Sub    string `json:"sub"`
 		Scope  string `json:"scope"`
 	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&introspectionResponse); err != nil {
 		return auth.AuthIntrospectionResult{}, err
 	}
@@ -81,7 +87,7 @@ func (introspector *authIntrospectorMock) Introspect(ctx context.Context, token 
 		IsActive: true,
 		Sub:      "fac0fa00-7ee9-b423-813f-eee8e115ca17",
 		Scopes: []string{
-			"cooking-items.read",
+			dto.ScopeCookingItemRead,
 		},
 	}, nil
 }

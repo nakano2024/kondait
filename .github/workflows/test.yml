@@ -29,6 +29,9 @@ jobs:
           DB_SSLMODE: disable
           DB_MIGRATIONS_PATH: ${{ github.workspace }}/backend/src/infra/migrations
           TESTDATA_PATH: ${{ github.workspace }}/backend/src/infra/testdata
+          AUTH_SERVER_URL: "http://auth.example.com"
+          CLIENT_ID: "test_client"
+          CLIENT_SECRET: "test_client_secret"
         run: |
           cd backend/src
           go test ./...

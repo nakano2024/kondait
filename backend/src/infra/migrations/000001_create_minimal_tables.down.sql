@@ -3,7 +3,9 @@ DROP TRIGGER IF EXISTS trg_users_updated_at ON users;
 DROP FUNCTION IF EXISTS set_updated_at();
 
 DROP INDEX IF EXISTS idx_cooking_items_owner_code;
+DROP INDEX IF EXISTS idx_cooking_histories_cooking_item_code;
 
+DROP TABLE IF EXISTS cooking_histories;
 DROP TABLE IF EXISTS cooking_items;
 DROP TABLE IF EXISTS users;
 
