@@ -102,6 +102,32 @@ func TestGetRecommendedCookingItemsHandler_Handle_Success(t *testing.T) {
 				return usecaseMock
 			},
 		},
+		{
+			name: "last_cooked_dateが0値の場合、last_cooked_dateを返さないこと",
+			ctx:  context.WithValue(context.Background(), "ctx-key-2-1", "ctx-2-1"),
+			principal: dto.Principal{
+				ActorCode: "actor-2-1",
+				Scopes:    []string{dto.ScopeCookingItemRead},
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody:   `{"cooking_items":[{"code":"A2","name":"Toast","cook_count":0}]}`,
+			setupMock: func(t *testing.T, ctrl *gomock.Controller, ctx context.Context) usecase.IGetRecommendedCookingItemsUsecase {
+				usecaseMock := NewMockGetRecommendedCookingItemsUsecase(ctrl)
+				usecaseMock.EXPECT().
+					Exec(ctx, usecase.ReccomendedCookingListFetchCondition{UserCode: "actor-2-1"}).
+					Return(usecase.ReccomendedCookingListItemOutput{
+						List: []usecase.ReccomendedCookingOutputItem{
+							{
+								Code:           "A2",
+								Name:           "Toast",
+								CookCount:      0,
+								LastCookedDate: time.Time{},
+							},
+						},
+					}, error(nil))
+				return usecaseMock
+			},
+		},
 	}
 
 	for _, tt := range testTable {

@@ -25,7 +25,7 @@ type responseItem struct {
 	Code           string    `json:"code"`
 	Name           string    `json:"name"`
 	CookCount      uint      `json:"cook_count"`
-	LastCookedDate time.Time `json:"last_cooked_date,omitempty"`
+	LastCookedDate *time.Time `json:"last_cooked_date,omitempty"`
 }
 
 type response struct {
@@ -61,11 +61,15 @@ func (handler *getRecommendedCookingItemsHandler) Handle(c echo.Context) error {
 func parseOutputToJson(output usecase.ReccomendedCookingListItemOutput) response {
 	resItems := make([]responseItem, 0, len(output.List))
 	for _, item := range output.List {
+		var lastCookedDate *time.Time
+		if !item.LastCookedDate.IsZero() {
+			lastCookedDate = &item.LastCookedDate
+		}
 		resItems = append(resItems, responseItem{
 			Code:           item.Code,
 			Name:           item.Name,
 			CookCount:      item.CookCount,
-			LastCookedDate: item.LastCookedDate,
+			LastCookedDate: lastCookedDate,
 		})
 	}
 
