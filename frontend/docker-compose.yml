@@ -9,8 +9,9 @@ services:
       - .:/app
       - node_modules:/app/node_modules
     environment:
-      - HOST=0.0.0.0
-      - PORT=3000
+      HOST: 0.0.0.0
+      PORT: 3000
+      ENV: development
 
 volumes:
   node_modules:
