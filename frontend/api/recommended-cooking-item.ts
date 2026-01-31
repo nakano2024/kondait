@@ -1,4 +1,4 @@
-import { RecommendedCookingItem } from "../type/cooking-item";
+import type { RecommendedCookingItem } from "../type/cooking-item";
 
 export interface RecommendedCookingItemsApi {
     getRecommendedCookingItems: () => Promise<RecommendedCookingItem[]>
