@@ -1,5 +1,9 @@
 <template>
-    <div>
-        Hello World
-    </div>
+    <RecommendedCookingItemsArea />
 </template>
+
+<script setup lang='ts'>
+definePageMeta({
+    layout: 'main',
+});
+</script>

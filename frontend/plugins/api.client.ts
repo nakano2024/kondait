@@ -1,17 +1,16 @@
 import { defineNuxtPlugin, useRuntimeConfig } from '#app';
 import { ENV_DEVELOPMENT } from '~/constant/env';
 import {
-    createRecommendedCookingItemsApi,
-    createRecommendedCookingItemsApiMock,
-    type RecommendedCookingItemsApi,
+    createRecommendedCookingItemApi,
+    createRecommendedCookingItemApiMock,
+    type RecommendedCookingItemApi,
 } from '~/api/recommended-cooking-item';
 
 export default defineNuxtPlugin(() => {
     const config = useRuntimeConfig();
-    const recommendedCookingItemsApi =
-        config.public.env === ENV_DEVELOPMENT
-            ? createRecommendedCookingItemsApiMock()
-            : createRecommendedCookingItemsApi();
+    const recommendedCookingItemsApi = config.public.env === ENV_DEVELOPMENT
+            ? createRecommendedCookingItemApiMock()
+            : createRecommendedCookingItemApi();
 
     return {
         provide: {
@@ -22,12 +21,12 @@ export default defineNuxtPlugin(() => {
 
 declare module '#app' {
     interface NuxtApp {
-        $recommendedCookingItemsApi: RecommendedCookingItemsApi;
+        $recommendedCookingItemsApi: RecommendedCookingItemApi;
     }
 }
 
 declare module 'vue' {
     interface ComponentCustomProperties {
-        $recommendedCookingItemsApi: RecommendedCookingItemsApi;
+        $recommendedCookingItemsApi: RecommendedCookingItemApi;
     }
 }

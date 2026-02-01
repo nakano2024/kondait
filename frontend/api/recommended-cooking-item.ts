@@ -1,10 +1,10 @@
 import type { RecommendedCookingItem } from "../type/cooking-item";
 
-export interface RecommendedCookingItemsApi {
+export interface RecommendedCookingItemApi {
     getRecommendedCookingItems: () => Promise<RecommendedCookingItem[]>
 }
 
-export const createRecommendedCookingItemsApiMock = (): RecommendedCookingItemsApi => {
+export const createRecommendedCookingItemApiMock = (): RecommendedCookingItemApi => {
     return {
         getRecommendedCookingItems: async (): Promise<RecommendedCookingItem[]> => {
             return [
@@ -12,7 +12,7 @@ export const createRecommendedCookingItemsApiMock = (): RecommendedCookingItemsA
                     code: '5b3b0b2a-1a9b-4df0-9f6b-0c1e6c3b8f01',
                     name: '納豆ご飯',
                     cookCount: 0,
-                    lastCookedDate: '2024-01-20T00:00:00Z',
+                    lastCookedDate: undefined,
                 },
                 {
                     code: 'b1c9c9b2-4b8b-4f9c-8d7d-38d1f7e1a2f2',
@@ -43,11 +43,18 @@ export const createRecommendedCookingItemsApiMock = (): RecommendedCookingItemsA
     }
 }
 
-export const createRecommendedCookingItemsApi = (): RecommendedCookingItemsApi => {
+export const createRecommendedCookingItemApi = (): RecommendedCookingItemApi => {
     return {
         getRecommendedCookingItems: async (): Promise<RecommendedCookingItem[]> => {
-            // APIリクエストロジックを実装
-            return []
+            try {
+                // APIリクエストロジックを実装
+                return []
+            }
+            catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                console.error('データの取得に失敗しました。', error);
+                throw new Error(`データの取得に失敗しました。 ${message}`);
+            }
         }
     }
 }

@@ -6,6 +6,8 @@ export default defineNuxtConfig({
   // Make ~/@ resolve from project root to keep custom modules in root directories.
   srcDir: '.',
   appDir: '.',
+  css: ['~/assets/css/tailwind.css'],
+  modules: ['@nuxtjs/tailwindcss'],
   runtimeConfig: {
     public: {
       env: process.env.ENV ?? ENV_DEVELOPMENT,
