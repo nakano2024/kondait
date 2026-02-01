@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col sm:flex-row items-center justify-center border border-gray-300 rounded-md p-4 min-h-32 gap-4 bg-white">
+    <div class="flex flex-col sm:flex-row items-center justify-center border border-gray-300 rounded-md p-4 min-h-48 sm:min-h-32 gap-4 bg-white">
         <div class="flex flex-col items-center gap-3 text-center w-full sm:flex-1">
             <div class="font-bold text-xl">{{ name }}</div>
             <div>
