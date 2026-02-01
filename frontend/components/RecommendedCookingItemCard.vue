@@ -7,7 +7,7 @@
                     <span class="font-bold text-blue-600">{{ cookCount }}</span>回食べた
                 </div>
                 <div v-else>
-                    <span class="font-bold text-red-700">一回も食べてない</span>
+                    <span class="font-bold text-red-700">まだ食べてない</span>
                 </div>
             </div>
             <div v-if="lastCookedDate">
