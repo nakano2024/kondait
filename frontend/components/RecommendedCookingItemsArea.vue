@@ -1,25 +1,28 @@
 <template>
     <div>
-        <div v-if="isLoading">
-            <RecommendedCookingItemSkeleton
-                v-for="n in 5"
-                :key="n"
-            />
-        </div>
-        <div v-else>
-            <div v-if="cookingItems.length" class="recommended-cooking-items">
-                <RecommendedCookingItemCard
-                    v-for="item in cookingItems"
-                    :key="item.code"
-                    :code="item.code"
-                    :name="item.name"
-                    :cook-count="item.cookCount"
-                    :last-cooked-date="item.formattedLastCookedDate"
+        <SectionHeading text="本日のおすすめ" />
+        <div class="content-scroll">
+            <div v-if="isLoading">
+                <RecommendedCookingItemSkeleton
+                    v-for="n in 5"
+                    :key="n"
                 />
             </div>
             <div v-else>
-                おすすめ可能な献立がありません。
-                献立を追加
+                <div v-if="cookingItems.length" class="recommended-cooking-items">
+                    <RecommendedCookingItemCard
+                        v-for="item in cookingItems"
+                        :key="item.code"
+                        :code="item.code"
+                        :name="item.name"
+                        :cook-count="item.cookCount"
+                        :last-cooked-date="item.formattedLastCookedDate"
+                    />
+                </div>
+                <div v-else>
+                    おすすめ可能な献立がありません。
+                    献立を追加
+                </div>
             </div>
         </div>
     </div>
@@ -52,10 +55,6 @@ const formatToJstDate = (dateString?: string): string | undefined => {
     });
 };
 
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 const fetchCookingItems = async () => {
     isLoading.value = true;
     const recommendedCookingItems = await recommendedCookingItemApi.getRecommendedCookingItems();
@@ -65,7 +64,6 @@ const fetchCookingItems = async () => {
         cookCount: item.cookCount,
         formattedLastCookedDate: formatToJstDate(item.lastCookedDate),
     }));
-    await sleep(3000);
     isLoading.value = false;
 };
 
@@ -75,4 +73,14 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.content-scroll {
+    max-height: 80vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.content-scroll::-webkit-scrollbar {
+    display: none;
+}
 </style>

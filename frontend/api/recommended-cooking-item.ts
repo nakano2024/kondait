@@ -4,9 +4,14 @@ export interface RecommendedCookingItemApi {
     getRecommendedCookingItems: () => Promise<RecommendedCookingItem[]>
 }
 
+const sleep = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export const createRecommendedCookingItemApiMock = (): RecommendedCookingItemApi => {
     return {
         getRecommendedCookingItems: async (): Promise<RecommendedCookingItem[]> => {
+            await sleep(2000);
             return [
                 {
                     code: '5b3b0b2a-1a9b-4df0-9f6b-0c1e6c3b8f01',
