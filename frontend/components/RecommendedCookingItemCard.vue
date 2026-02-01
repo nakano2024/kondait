@@ -4,14 +4,14 @@
             <div class="font-bold text-xl">{{ name }}</div>
             <div>
                 <div v-if="isCooked">
-                    <span class="font-bold text-blue-600">{{ cookCount }}</span>回作った
+                    <span class="font-bold text-blue-600">{{ cookCount }}</span>回食べた
                 </div>
                 <div v-else>
-                    <span class="font-bold text-red-700">一回も作ってない</span>
+                    <span class="font-bold text-red-700">一回も食べてない</span>
                 </div>
             </div>
             <div v-if="lastCookedDate">
-                <span class="font-bold text-blue-500">{{ lastCookedDate }}</span>が最後に作った日
+                <span class="font-bold text-blue-500">{{ lastCookedDate }}</span>が最後に食べた日
             </div>
         </div>
         <div class="flex items-center justify-center">
