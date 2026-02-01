@@ -29,6 +29,6 @@ const props = defineProps<{
     lastCookedDate?: string;
 }>();
 
-const isCooked = computed((): boolean => 0 < props.cookCount);
+const isCooked = computed((): boolean => (0 < props.cookCount));
 
 </script>
