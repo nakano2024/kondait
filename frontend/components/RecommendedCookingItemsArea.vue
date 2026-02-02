@@ -1,71 +1,47 @@
 <template>
     <div>
         <SectionHeading text="本日のおすすめ" />
-        <div class="content-scroll">
-            <div v-if="isLoading">
-                <RecommendedCookingItemSkeleton
-                    v-for="n in 5"
-                    :key="n"
-                />
-            </div>
-            <div v-else>
-                <div v-if="cookingItems.length" class="recommended-cooking-items">
-                    <RecommendedCookingItemCard
-                        v-for="item in cookingItems"
-                        :key="item.code"
-                        :code="item.code"
-                        :name="item.name"
-                        :cook-count="item.cookCount"
-                        :last-cooked-date="item.formattedLastCookedDate"
-                    />
-                </div>
-                <div v-else>
-                    おすすめ可能な献立がありません。
-                    献立を追加
-                </div>
-            </div>
+        <div class="content-scroll rounded-md" :class="overflowStyle">
+            <RecommendedCookingItemSkeleton
+                v-if="isLoading"
+                v-for="n in 5"
+                :key="n"
+            />
+            <RecommendedCookingItemCard
+                v-else-if="cookingItems.length"
+                v-for="item in cookingItems"
+                :key="item.code"
+                :code="item.code"
+                :name="item.name"
+                :cook-count="item.cookCount"
+                :last-cooked-date="item.lastCookedDate"
+            />
+            <RecommendedCookingItemsEmpty v-else />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { useRecommendedCookingItemApi } from '~/composables/useRecommendedCookingItemApi';
-
-interface CookingItem {
-    code: string,
-    name: string,
-    cookCount: number,
-    formattedLastCookedDate?: string,
-}
+import type { RecommendedCookingItem } from '~/type/cooking-item';
 
 const isLoading = ref<boolean>(true);
-const cookingItems = ref<CookingItem[]>([]);
+const cookingItems = ref<RecommendedCookingItem[]>([]);
 const recommendedCookingItemApi = useRecommendedCookingItemApi();
-
-const formatToJstDate = (dateString?: string): string | undefined => {
-    if (!dateString) {
-        return undefined;
-    }
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ja-JP', {
-        timeZone: 'Asia/Tokyo',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-    });
-};
 
 const fetchCookingItems = async () => {
     isLoading.value = true;
     const recommendedCookingItems = await recommendedCookingItemApi.getRecommendedCookingItems();
-    cookingItems.value = recommendedCookingItems.map((item) => ({
-        code: item.code,
-        name: item.name,
-        cookCount: item.cookCount,
-        formattedLastCookedDate: formatToJstDate(item.lastCookedDate),
-    }));
+    cookingItems.value = recommendedCookingItems;
     isLoading.value = false;
 };
+
+const overflowStyle = computed((): string => {
+    if (isLoading.value) {
+        return 'overflow-y-hidden';
+    }
+    return 'overflow-y-auto';
+});
 
 onMounted(() => {
     fetchCookingItems();
@@ -74,8 +50,7 @@ onMounted(() => {
 
 <style scoped>
 .content-scroll {
-    max-height: 80vh;
-    overflow-y: auto;
+    height: 80vh;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }

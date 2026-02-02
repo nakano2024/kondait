@@ -10,8 +10,8 @@
                     <span class="font-bold text-red-700">まだ食べてない</span>
                 </div>
             </div>
-            <div v-if="lastCookedDate">
-                <span class="font-bold text-blue-500">{{ lastCookedDate }}</span>が最後に食べた日
+            <div v-if="formattedLastCookedDate">
+                <span class="font-bold text-blue-500">{{ formattedLastCookedDate }}</span>が最後に食べた日
             </div>
         </div>
         <div class="flex items-center justify-center">
@@ -29,6 +29,22 @@ const props = defineProps<{
     lastCookedDate?: string;
 }>();
 
+const formatToJstDate = (dateString?: string): string | undefined => {
+    if (!dateString) {
+        return undefined;
+    }
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ja-JP', {
+        timeZone: 'Asia/Tokyo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    });
+};
+
 const isCooked = computed((): boolean => (0 < props.cookCount));
+const formattedLastCookedDate = computed((): string | undefined => (
+    formatToJstDate(props.lastCookedDate)
+));
 
 </script>
