@@ -1,5 +1,6 @@
 <template>
-    <button class="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 active:bg-blue-800 transition">
-        これを食べる
+    <button class="inline-flex items-center justify-center rounded-full bg-orange-600 h-10 px-4 hover:bg-orange-700 active:bg-orange-800 transition">
+        <CookIcon />
+        <span class="relative top-[1px] leading-none text-white font-semibold">これを食べる</span>
     </button>
 </template>
